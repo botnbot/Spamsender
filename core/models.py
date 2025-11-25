@@ -29,9 +29,14 @@ class Recipient(models.Model):
 
 
 class Newsletter(models.Model):
+    STATUS_CHOICES = [
+        ('created', 'Создана'),
+        ('active', 'Активна'),
+        ('completed', 'Завершена'),
+    ]
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='completed')
     first_send_time = models.DateTimeField(verbose_name="Дата первой отправки")
     last_send_time = models.DateTimeField(verbose_name="Дата окончания отправки")
-    status = models.CharField(max_length=30, verbose_name='Статус')
     message = models.ForeignKey(
         to="Message",
         on_delete=models.CASCADE,
@@ -50,3 +55,4 @@ class Newsletter(models.Model):
     class Meta:
         verbose_name = "рассылка"
         verbose_name_plural = "рассылки"
+        ordering = ('-first_send_time',)
