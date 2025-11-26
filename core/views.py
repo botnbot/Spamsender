@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, DeleteView, DetailView, UpdateView
 
@@ -120,3 +121,10 @@ class NewsletterDetailView(DetailView):
     model = Newsletter
     template_name = 'core/newsletter_detail.html'
     context_object_name = 'newsletter'
+
+
+def login_view(request):
+    return HttpResponse("Заглушка: страница входа")
+
+def logout_view(request):
+    return HttpResponse("Заглушка: страница выхода")

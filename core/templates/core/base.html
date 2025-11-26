@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Управление рассылкой{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'core:message_list' %}">SpamSender</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <!-- Основные ссылки -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'core:message_list' %}">Сообщения</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'core:message_create' %}">Создать сообщение</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'core:recipient_list' %}">Получатели</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'core:newsletter_list' %}">Рассылки</a>
+        </li>
+      </ul>
+
+      <!-- Пользовательские ссылки -->
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        {% if user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link" href="#">{{ user.username }}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'core:logout' %}">Выйти</a>
+            </li>
+        {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'core:login' %}">Войти</a>
+            </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-5">
+    {% block content %}{% endblock %}
+</div>
+
+<script type="text/javascript" src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

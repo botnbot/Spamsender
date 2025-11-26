@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+{% block title %}Сообщение: {{ message.subject }}{% endblock %}
+
+{% block content %}
+<h1>{{ message.subject }}</h1>
+
+<p><strong>Текст сообщения:</strong></p>
+<p>{{ message.text }}</p>
+
+<hr>
+
+<a href="{% url 'core:message_update' message.pk %}" class="btn btn-primary">
+    Редактировать
+</a>
+
+<a href="{% url 'core:message_delete' message.pk %}" class="btn btn-danger">
+    Удалить
+</a>
+
+<a href="{% url 'core:message_list' %}" class="btn btn-secondary">
+    Назад к списку
+</a>
+{% endblock %}

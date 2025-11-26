@@ -1,0 +1,41 @@
+{% extends "core/base.html" %}
+
+{% block title %}Список сообщений{% endblock %}
+
+{% block content %}
+<h1>Список сообщений</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Тема</th>
+            <th>Дата создания</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for message in messages %}
+        <tr>
+            <!-- Ссылка на детальный просмотр -->
+            <td>
+                <a href="{% url 'core:message_detail' message.pk %}">
+                    {{ message.subject }}
+                </a>
+            </td>
+            <td>{{ message.created_at }}</td>
+            <td>
+                <a href="{% url 'core:message_update' message.pk %}" class="btn btn-sm btn-primary">Редактировать</a>
+                <a href="{% url 'core:message_delete' message.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">Сообщений нет</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'core:message_create' %}" class="btn btn-success mt-3">Создать новое сообщение</a>
+{% endblock %}
+
