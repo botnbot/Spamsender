@@ -77,6 +77,9 @@ class RecipientDetailView(DetailView):
     template_name = 'core/recipient_detail.html'
     context_object_name = 'recipient'
 
+    def get_success_url(self):
+        return reverse_lazy('core:recipient_detail', kwargs={'pk': self.object.pk})
+
 
 class RecipientDeleteView(DeleteView):
     model = Recipient
