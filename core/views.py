@@ -104,7 +104,7 @@ class NewsletterCreateView(CreateView):
 
 class NewsletterDeleteView(DeleteView):
     model = Newsletter
-    template_name = 'core/newsletter_delete.html'
+    template_name = 'core/newsletter_confirm_delete.html'
     success_url = reverse_lazy('core:newsletter_list')
     context_object_name = 'newsletter'
 

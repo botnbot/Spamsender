@@ -1,0 +1,37 @@
+{% extends "core/base.html" %}
+{% block title %}Рассылка: {{ newsletter.message.subject }}{% endblock %}
+
+{% block content %}
+<h1>{{ newsletter.message.subject }}</h1>
+
+<p><strong>Статус:</strong></p>
+<p>{{ newsletter.status }}</p>
+
+<p><strong>Дата начала:</strong></p>
+<p>{{ newsletter.first_send_time }}</p>
+
+<p><strong>Дата завершения:</strong></p>
+<p>{{ newsletter.last_send_time }}</p>
+
+<p><strong>Получатели:</strong></p>
+<ul>
+    {% for recipient in newsletter.recipients.all %}
+        <li>{{ recipient.name }} ({{ recipient.email }})</li>
+    {% empty %}
+        <li>Нет получателей</li>
+    {% endfor %}
+</ul>
+<hr>
+
+<a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-primary">
+    Редактировать
+</a>
+
+<a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-danger">
+    Удалить
+</a>
+
+<a href="{% url 'core:newsletter_list' %}" class="btn btn-secondary">
+    Назад к списку
+</a>
+{% endblock %}
