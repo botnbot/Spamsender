@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+{% block title %}Попытка: {{ attempt.attempt_time }}{% endblock %}
+
+{% block content %}
+<h1>Попытка: {{ attempt.attempt_time }}</h1>
+
+<p><strong>Ответ сервера:</strong></p>
+<p>{{ attempt.smtp_answer }}</p>
+
+<hr>
+
+<a href="{% url 'core:attempt_update' attempt.pk %}" class="btn btn-primary">
+    Редактировать
+</a>
+
+<a href="{% url 'core:attempt_delete' attempt.pk %}" class="btn btn-danger">
+    Удалить
+</a>
+
+<a href="{% url 'core:attempt_list' %}" class="btn btn-secondary">
+    Назад к списку
+</a>
+{% endblock %}

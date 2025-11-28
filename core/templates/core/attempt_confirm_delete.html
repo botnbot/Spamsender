@@ -1,0 +1,26 @@
+{% extends "core/base.html" %}
+
+{% block title %}Удаление попытки{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                Подтверждение удаления
+            </div>
+            <div class="card-body">
+                <p>Вы уверены, что хотите удалить попытку от</p>
+                <h5>{{ attempt.attempt_time }}</h5>
+                <p>{{ attempt.status }}</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <a href="{% url 'core:attempt_list' %}" class="btn btn-secondary">Отмена</a>
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

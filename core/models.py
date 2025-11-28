@@ -56,3 +56,29 @@ class Newsletter(models.Model):
         verbose_name = "рассылка"
         verbose_name_plural = "рассылки"
         ordering = ('-first_send_time',)
+
+
+class SendAttempt(models.Model):
+    attempt_time = models.DateTimeField(auto_now_add=True, verbose_name="Время попытки отправки")
+    STATUS_CHOICES = [
+        ('success', 'Успешно'),
+        ('fail', 'Не успешно'),
+    ]
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='fail')
+    smtp_answer = models.TextField(verbose_name='Ответ сервера')
+
+    newsletter = models.ForeignKey(
+        to="Newsletter",
+        on_delete=models.CASCADE,
+        verbose_name="рассылка",
+        related_name="attempts",
+    )
+
+    class Meta:
+        verbose_name = "попытка"
+        verbose_name_plural = "попытки"
+        ordering = ('-attempt_time',)
+
+    def __str__(self):
+        return f"попытка {self.attempt_time} {self.status} - {self.smtp_answer}"
+

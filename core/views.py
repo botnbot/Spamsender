@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, DeleteView, DetailView, UpdateView
 
-from core.models import Message, Recipient, Newsletter
+from core.models import Message, Recipient, Newsletter, SendAttempt
 
 
 # Create your views here.
@@ -124,6 +124,38 @@ class NewsletterDetailView(DetailView):
     model = Newsletter
     template_name = 'core/newsletter_detail.html'
     context_object_name = 'newsletter'
+
+
+class SendAttemptListView(ListView):
+    model = SendAttempt
+    template_name = "core/attempt_list.html"
+    context_object_name = "attempts"
+
+
+class SendAttemptDetailView(DetailView):
+    model = SendAttempt
+    template_name = "core/attempt_detail.html"
+    context_object_name = "sendattempt"
+
+
+class SendAttemptCreateView(CreateView):
+    model = SendAttempt
+    fields = ("status", "smtp_answer", "newsletter")
+    template_name = "core/attempt_create.html"
+    success_url = reverse_lazy("core:attempt_list")
+
+
+class SendAttemptUpdateView(UpdateView):
+    model = SendAttempt
+    fields = ("status", "smtp_answer")
+    template_name = "core/attempt_update.html"
+    success_url = reverse_lazy("core:attempt_list")
+
+
+class SendAttemptDeleteView(DeleteView):
+    model = SendAttempt
+    template_name = "core/attempt_confirm_delete.html"
+    success_url = reverse_lazy("core:attempt_list")
 
 
 def login_view(request):
