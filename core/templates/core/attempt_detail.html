@@ -2,9 +2,13 @@
 {% block title %}Попытка: {{ attempt.attempt_time }}{% endblock %}
 
 {% block content %}
-<h1>Попытка: {{ attempt.attempt_time }}</h1>
+<h5><strong>Время попытки:</strong></h5>
+<p> {{ attempt.attempt_time }} </p>
 
-<p><strong>Ответ сервера:</strong></p>
+<h5><strong>Тема:</strong></h5>
+<p>{{ attempt.newsletter.message.subject }}</p>
+
+<h5><strong>Ответ сервера:</strong></h5>
 <p>{{ attempt.smtp_answer }}</p>
 
 <hr>
@@ -13,7 +17,7 @@
     Редактировать
 </a>
 
-<a href="{% url 'core:attempt_delete' attempt.pk %}" class="btn btn-danger">
+<a href="{% url 'core:attempt_confirm_delete' attempt.pk %}" class="btn btn-danger">
     Удалить
 </a>
 

@@ -1,37 +1,45 @@
 {% extends "core/base.html" %}
 
-{% block title %}Список попыток{% endblock %}
+{% block title %}Список попыток отправки{% endblock %}
 
 {% block content %}
-<h1>Список попыток</h1>
+<h1>Список попыток отправки</h1>
 
 <table class="table table-striped">
     <thead>
-        <tr>
-            <th>Дата</th>
-            <th>статус</th>
-        </tr>
+    <tr>
+<!--        Заголовки столбцов списка-->
+        <th>Время попытки</th>
+        <th>Тема</th>
+        <th>Статус</th>
+    </tr>
     </thead>
     <tbody>
-        {% for attempt in attempts %}
-        <tr>
-            <!-- Ссылка на детальный просмотр -->
-            <td>
-                <a href="{% url 'core:attempt_detail' attempt.pk %}">
-                    {{ attempt.attempt_time }}
-                </a>
-            </td>
-            <td>{{ attempt.status }}</td>
-            <td>
-                <a href="{% url 'core:attempt_update' attempt.pk %}" class="btn btn-sm btn-primary">Редактировать</a>
-                <a href="{% url 'core:attempt_confirm_delete' attempt.pk %}" class="btn btn-sm btn-danger">Удалить</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="3">Нет попыток</td>
-        </tr>
-        {% endfor %}
+    {% for attempt in attempts %}
+    <tr>
+<!--        Данные для столбцов  списка-->
+        <td>
+            <a href="{% url 'core:attempt_detail' attempt.pk %}"> {{ attempt.attempt_time }} </a>
+        </td>
+
+        <td>
+            {{ attempt.newsletter.message.subject }}
+        </td>
+
+        <td>
+            {{ attempt.status }}
+        </td>
+
+        <td>
+            <a href="{% url 'core:attempt_update' attempt.pk %}" class="btn btn-sm btn-primary">Редактировать</a>
+            <a href="{% url 'core:attempt_confirm_delete' attempt.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">Нет попыток</td>
+    </tr>
+    {% endfor %}
     </tbody>
 </table>
 

@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+{% block title %}Домашняя страница{% endblock %}
+
+{% block content %}
+<h1><strong>SpamSender</strong></h1>
+
+<h5>Всего рассылок</h5>
+<p>{{ total_newsletters }}</p>
+
+<h5>Активных рассылок</h5>
+<p>{{ active_newsletters }}</p>
+
+<h5>Уникальных получателей</h5>
+<p>{{ unique_recipients }}</p>
+
+
+{% endblock %}

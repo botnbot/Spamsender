@@ -5,6 +5,8 @@ from core.views import *
 app_name = 'core'
 
 urlpatterns = [
+    path("", HomeView.as_view(), name="home"),
+
     path('message/', MessageListView.as_view(), name='message_list'),
     path('message/<int:pk>/', MessageDetailView.as_view(), name='message_detail'),
     path('message/new/', MessageCreateView.as_view(), name='message_create'),
@@ -22,6 +24,7 @@ urlpatterns = [
     path('newsletter/new/', NewsletterCreateView.as_view(), name='newsletter_create'),
     path('newsletter/<int:pk>/edit/', NewsletterUpdateView.as_view(), name='newsletter_update'),
     path('newsletter/<int:pk>/delete/', NewsletterDeleteView.as_view(), name='newsletter_delete'),
+    path("newsletter/<int:pk>/send/", NewsletterManualSendView.as_view(), name="newsletter_manual_send"),
 
     path("attempts/", SendAttemptListView.as_view(), name="attempt_list"),
     path("attempts/<int:pk>/", SendAttemptDetailView.as_view(), name="attempt_detail"),

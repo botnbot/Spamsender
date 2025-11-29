@@ -16,9 +16,9 @@
 <p><strong>Получатели:</strong></p>
 <ul>
     {% for recipient in newsletter.recipients.all %}
-        <li>{{ recipient.name }} ({{ recipient.email }})</li>
+    <li>{{ recipient.name }} ({{ recipient.email }})</li>
     {% empty %}
-        <li>Нет получателей</li>
+    <li>Нет получателей</li>
     {% endfor %}
 </ul>
 <hr>
@@ -27,9 +27,13 @@
     Редактировать
 </a>
 
-<a href="{% url '#' newsletter.pk %}" class="btn btn-primary">
-    Отправить
-</a>
+<form action="{% url 'core:newsletter_manual_send' newsletter.pk %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">
+        Отправить сейчас вручную
+    </button>
+</form>
+
 
 <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-danger">
     Удалить
