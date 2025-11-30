@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from core.models import Newsletter
 from core.services.send_newsletter import send_newsletter_now
 
@@ -6,17 +6,13 @@ class Command(BaseCommand):
     help = "Отправка рассылки вручную"
 
     def add_arguments(self, parser):
-        parser.add_argument("newsletter_id", type=int, help="ID рассылки")
+        parser.add_argument('pk', type=int, help=' primary key рассылки')
 
     def handle(self, *args, **options):
-        newsletter_id = options["newsletter_id"]
+        pk = options['pk']
         try:
-            newsletter = Newsletter.objects.get(id=newsletter_id)
+            nl = Newsletter.objects.get(pk=pk)
         except Newsletter.DoesNotExist:
-            self.stdout.write(self.style.ERROR("Рассылка не найдена"))
-            return
-
-        send_newsletter_now(newsletter)
-
-        self.stdout.write(self.style.SUCCESS("Рассылка успешно отправлена"))
-
+            raise CommandError(f"Рассылки {pk} не существует")
+        send_newsletter_now(nl)
+        self.stdout.write(self.style.SUCCESS(f'Отправлена рассылка {pk}'))

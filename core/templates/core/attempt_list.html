@@ -8,7 +8,7 @@
 <table class="table table-striped">
     <thead>
     <tr>
-<!--        Заголовки столбцов списка-->
+        <!--        Заголовки столбцов списка-->
         <th>Время попытки</th>
         <th>Тема</th>
         <th>Статус</th>
@@ -17,22 +17,19 @@
     <tbody>
     {% for attempt in attempts %}
     <tr>
-<!--        Данные для столбцов  списка-->
+        <!--        Данные для столбцов  списка-->
         <td>
             <a href="{% url 'core:attempt_detail' attempt.pk %}"> {{ attempt.attempt_time }} </a>
         </td>
 
         <td>
-            {{ attempt.newsletter.message.subject }}
+            <a href="{% url 'core:newsletter_detail' attempt.newsletter.pk %}">
+                {{ attempt.newsletter.message.subject }}
+            </a>
         </td>
 
         <td>
             {{ attempt.status }}
-        </td>
-
-        <td>
-            <a href="{% url 'core:attempt_update' attempt.pk %}" class="btn btn-sm btn-primary">Редактировать</a>
-            <a href="{% url 'core:attempt_confirm_delete' attempt.pk %}" class="btn btn-sm btn-danger">Удалить</a>
         </td>
     </tr>
     {% empty %}
@@ -43,6 +40,5 @@
     </tbody>
 </table>
 
-<a href="{% url 'core:attempt_create' %}" class="btn btn-success mt-3">Сделать новую попытку</a>
 {% endblock %}
 

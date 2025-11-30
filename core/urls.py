@@ -28,9 +28,9 @@ urlpatterns = [
 
     path("attempts/", SendAttemptListView.as_view(), name="attempt_list"),
     path("attempts/<int:pk>/", SendAttemptDetailView.as_view(), name="attempt_detail"),
-    path("attempts/<int:pk>/edit/", SendAttemptUpdateView.as_view(), name="attempt_update"),
-    path("attempts/<int:pk>/delete/", SendAttemptDeleteView.as_view(), name="attempt_confirm_delete"),
-    path("attempts/new/", SendAttemptCreateView.as_view(), name="attempt_create"),
+    # path("attempts/<int:pk>/edit/", SendAttemptUpdateView.as_view(), name="attempt_update"),
+    # path("attempts/<int:pk>/delete/", SendAttemptDeleteView.as_view(), name="attempt_confirm_delete"),
+    # path("attempts/new/", SendAttemptCreateView.as_view(), name="attempt_create"),
 
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
