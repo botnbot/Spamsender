@@ -1,19 +1,15 @@
 {% extends "core/base.html" %}
+
 {% block title %}Попытка: {{ attempt.attempt_time }}{% endblock %}
 
 {% block content %}
-<h5><strong>Время попытки:</strong></h5>
-<p> {{ attempt.attempt_time }} </p>
-
-<h5><strong>Тема:</strong></h5>
-<p>{{ attempt.newsletter.message.subject }}</p>
-
-<h5><strong>Ответ сервера:</strong></h5>
-<p>{{ attempt.smtp_answer }}</p>
-
-<hr>
-
-<a href="{% url 'core:attempt_list' %}" class="btn btn-secondary">
-    Назад к списку
-</a>
+<div class="card shadow-sm">
+    <div class="card-header">Детали попытки</div>
+    <div class="card-body">
+        <p><strong>Время попытки:</strong> {{ attempt.attempt_time }}</p>
+        <p><strong>Тема:</strong> {{ attempt.newsletter.message.subject }}</p>
+        <p><strong>Ответ сервера:</strong> {{ attempt.smtp_answer }}</p>
+        <a href="{% url 'core:attempt_list' %}" class="btn btn-secondary">Назад к списку</a>
+    </div>
+</div>
 {% endblock %}
