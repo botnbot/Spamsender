@@ -1,6 +1,11 @@
-from django.urls import path
+from django.contrib.auth.views import LogoutView
 
-from core.views import *
+from core.views import MessageListView, MessageDetailView, MessageCreateView, MessageUpdateView, MessageDeleteView, \
+    RecipientListView, RecipientDetailView, RecipientCreateView, RecipientUpdateView, RecipientDeleteView, \
+    NewsletterListView, NewsletterDetailView, NewsletterCreateView, NewsletterUpdateView, NewsletterManualSendView, \
+    NewsletterDeleteView, SendAttemptListView, SendAttemptDetailView, login_view, logout_view
+from django.urls import path
+from .views import HomeView
 
 app_name = 'core'
 
@@ -33,5 +38,5 @@ urlpatterns = [
     # path("attempts/new/", SendAttemptCreateView.as_view(), name="attempt_create"),
 
     path('login/', login_view, name='login'),
-    path('logout/', logout_view, name='logout'),
+    path("logout/", LogoutView.as_view(), name="logout"),
 ]

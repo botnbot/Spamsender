@@ -60,6 +60,7 @@ class Newsletter(models.Model):
 
 class SendAttempt(models.Model):
     attempt_time = models.DateTimeField(auto_now_add=True, verbose_name="Время попытки отправки")
+    recipient = models.ForeignKey(Recipient, on_delete=models.CASCADE, null=True, blank=True)
     STATUS_CHOICES = [
         ('success', 'Успешно'),
         ('fail', 'Не успешно'),

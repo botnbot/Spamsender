@@ -18,6 +18,7 @@ def send_newsletter_now(newsletter):
             SendAttempt.objects.create(
                 newsletter=newsletter,
                 status="success",
+                recipient=recipient,
                 smtp_answer="OK"
             )
 
@@ -25,6 +26,7 @@ def send_newsletter_now(newsletter):
             SendAttempt.objects.create(
                 newsletter=newsletter,
                 status="fail",
+                recipient=recipient,
                 smtp_answer=str(e)
             )
 
