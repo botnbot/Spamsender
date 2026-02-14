@@ -10,9 +10,6 @@ from core.models import Message, Recipient, Newsletter, SendAttempt
 from core.services.send_newsletter import send_newsletter_now
 
 
-# Create your views here.
-
-
 class MessageListView(LoginRequiredMixin, ListView):
     model = Message
     template_name = 'core/message_list.html'
@@ -95,7 +92,7 @@ class NewsletterListView(LoginRequiredMixin, ListView):
 
 class NewsletterCreateView(LoginRequiredMixin, CreateView):
     model = Newsletter
-    fields = ['message', 'recipients']
+    fields = ['message', 'recipients', 'first_send_time', 'last_send_time']
     template_name = 'core/newsletter_create.html'
     success_url = reverse_lazy('core:newsletter_list')
     context_object_name = 'newsletter'
@@ -110,7 +107,7 @@ class NewsletterDeleteView(LoginRequiredMixin, DeleteView):
 
 class NewsletterUpdateView(LoginRequiredMixin, UpdateView):
     model = Newsletter
-    fields = ['message', 'recipients']
+    fields = ['message', 'recipients', 'first_send_time', 'last_send_time']
     template_name = 'core/newsletter_update.html'
     success_url = reverse_lazy('core:newsletter_list')
     context_object_name = 'newsletter'
@@ -146,16 +143,22 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["total_newsletters"] = Newsletter.objects.count()
         context["active_newsletters"] = Newsletter.objects.filter(status='active').count()
         context["unique_recipients"] = Recipient.objects.count()
+        context["success_send_attempt_count"] = SendAttempt.objects.filter(status="success").count()
+        context["fail_send_attempt_count"] = SendAttempt.objects.filter(status="fail").count()
 
         return context
 
 
 class NewsletterManualSendView(LoginRequiredMixin, View):
-    def post(self, request, pk):
+    def post(self, request, pk, success_count, fail_count):
         newsletter = get_object_or_404(Newsletter, pk=pk)
-
-        send_newsletter_now(newsletter)
-        messages.success(request, "Рассылка успешно отправлена вручную.")
+        try:
+            send_newsletter_now(newsletter)
+            messages.success(request, "Рассылка успешно отправлена вручную.")
+            success_count += 1
+        except Exception as e:
+            messages.error(request,f'Ошибка отправки {e}')
+            fail_count += 1
 
         return redirect("core:newsletter_detail", pk=newsletter.pk)
 

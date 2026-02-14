@@ -31,10 +31,10 @@ class Recipient(models.Model):
 class Newsletter(models.Model):
     STATUS_CHOICES = [
         ('created', 'Создана'),
-        ('active', 'Активна'),
+        ('started', 'Запущена'),
         ('completed', 'Завершена'),
     ]
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='completed')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='created')
     first_send_time = models.DateTimeField(verbose_name="Дата первой отправки")
     last_send_time = models.DateTimeField(verbose_name="Дата окончания отправки")
     message = models.ForeignKey(
@@ -50,7 +50,8 @@ class Newsletter(models.Model):
     )
 
     def __str__(self):
-        return f"Рассылка {self.message.subject} {self.status}"
+        return f"Рассылка {self.id}— {self.get_status_display()}"
+
 
     class Meta:
         verbose_name = "рассылка"
@@ -66,7 +67,7 @@ class SendAttempt(models.Model):
         ('fail', 'Не успешно'),
     ]
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='fail')
-    smtp_answer = models.TextField(verbose_name='Ответ сервера')
+    smtp_answer = models.TextField(blank=True, null=True,verbose_name='Ответ сервера')
 
     newsletter = models.ForeignKey(
         to="Newsletter",
@@ -81,5 +82,5 @@ class SendAttempt(models.Model):
         ordering = ('-attempt_time',)
 
     def __str__(self):
-        return f"попытка {self.attempt_time} {self.status} - {self.smtp_answer}"
+        return f" {self.attempt_time} {self.status}"
 
