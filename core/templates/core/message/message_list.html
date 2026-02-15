@@ -1,14 +1,14 @@
 {% extends "core/base.html" %}
-
-{% block title %}Список сообщений{% endblock %}
-
+{% load static %}
 {% block content %}
-<h1>Список сообщений</h1>
+<h2>Список сообщений</h2>
 
 <table class="table table-striped">
     <thead>
         <tr>
             <th>Тема</th>
+            <th>Успешно отправлено</th>
+            <th>Неуспешно</th>
             <th style="width: 220px;">Действия</th>
         </tr>
     </thead>
@@ -21,8 +21,10 @@
                     {{ message.subject }}
                 </a>
             </td>
+            <td>{{ message.success_count|default:"0" }}</td>
+            <td>{{ message.fail_count|default:"0" }}</td>
 
-            <!-- Отдельная колонка под кнопки -->
+            <!-- Колонка под кнопки -->
             <td>
                 <div class="d-flex gap-2">
                     <a href="{% url 'core:message_update' message.pk %}" class="btn btn-sm btn-primary">
@@ -36,7 +38,7 @@
         </tr>
         {% empty %}
         <tr>
-            <td colspan="2">Сообщений нет</td>
+            <td colspan="4">Сообщений нет</td>
         </tr>
         {% endfor %}
     </tbody>

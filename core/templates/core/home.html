@@ -5,20 +5,20 @@
 <h1><strong>SpamSender</strong></h1>
 
 <div class="links">
-    <a href="#">
+    <a href="{% url 'core:newsletter_list' %}">
         Всего рассылок {{ total_newsletters }}
     </a>
 
-    <a href="{% url 'core:newsletter_list' %}">
+    <a href="{% url 'core:active_newsletter_list' %}">
         Активных рассылок {{ active_newsletters }}
     </a>
 
-    <a href="#">
+    <a href="{% url 'core:recipient_list' %}">
         Уникальных получателей {{ unique_recipients }}
     </a>
 
-    <a href="#">
-        Успешно доставленных сообщений {{ success_send_attempt_count }}
+    <a href="{% url 'core:message_list' %}">
+        Отправленных сообщений {{ success_send_attempt_count }}
     </a>
 
     <a href="#">

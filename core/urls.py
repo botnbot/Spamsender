@@ -3,7 +3,7 @@ from django.contrib.auth.views import LogoutView
 from core.views import MessageListView, MessageDetailView, MessageCreateView, MessageUpdateView, MessageDeleteView, \
     RecipientListView, RecipientDetailView, RecipientCreateView, RecipientUpdateView, RecipientDeleteView, \
     NewsletterListView, NewsletterDetailView, NewsletterCreateView, NewsletterUpdateView, NewsletterManualSendView, \
-    NewsletterDeleteView, SendAttemptListView, SendAttemptDetailView, login_view, logout_view
+    NewsletterDeleteView, SendAttemptListView, SendAttemptDetailView, login_view, logout_view, ActiveNewsletterListView
 from django.urls import path
 from .views import HomeView
 
@@ -24,6 +24,7 @@ urlpatterns = [
     path('recipient/<int:pk>/edit/', RecipientUpdateView.as_view(), name='recipient_update'),
     path('recipient/<int:pk>/delete/', RecipientDeleteView.as_view(), name='recipient_delete'),
 
+    path('active_newsletter/', ActiveNewsletterListView.as_view(), name='active_newsletter_list'),
     path('newsletter/', NewsletterListView.as_view(), name='newsletter_list'),
     path('newsletter/<int:pk>/', NewsletterDetailView.as_view(), name='newsletter_detail'),
     path('newsletter/new/', NewsletterCreateView.as_view(), name='newsletter_create'),
