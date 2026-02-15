@@ -4,20 +4,41 @@
 {% block content %}
 <h1><strong>SpamSender</strong></h1>
 
-<h5>Всего рассылок</h5>
-<p>{{ total_newsletters }}</p>
+<div class="links">
+    <a href="#">
+        Всего рассылок {{ total_newsletters }}
+    </a>
 
-<h5>Активных рассылок</h5>
-<p>{{ active_newsletters }}</p>
+    <a href="{% url 'core:newsletter_list' %}">
+        Активных рассылок {{ active_newsletters }}
+    </a>
 
-<h5>Уникальных получателей</h5>
-<p>{{ unique_recipients }}</p>
+    <a href="#">
+        Уникальных получателей {{ unique_recipients }}
+    </a>
 
-<h5>Успешно доставленных сообщений</h5>
-<p>{{ success_send_attempt_count }}</p>
+    <a href="#">
+        Успешно доставленных сообщений {{ success_send_attempt_count }}
+    </a>
 
-<h5>Недоставленных сообщений</h5>
-<p>{{ fail_send_attempt_count }}</p>
+    <a href="#">
+        Недоставленных сообщений {{ fail_send_attempt_count }}
+    </a>
+</div>
 
-
+{% endblock %}
+{% block extra_css%}
+<style>
+    div.links > a {
+        text-decoration: none !important;
+        color: black !important;
+        font-size: 20px;
+        text-align: left;
+        display: block !important;
+        margin-top: 1rem;
+    }
+    div.links > a:hover {
+     text-decoration: underline !important;
+    }
+</style>
 {% endblock %}
