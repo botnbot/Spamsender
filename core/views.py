@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Q
+
+from core.models import Message, Recipient, Newsletter, SendAttempt
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -8,27 +10,35 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView, CreateView, DeleteView, DetailView, UpdateView, TemplateView
 
-from core.models import Message, Recipient, Newsletter, SendAttempt
+
 from core.services.send_newsletter import send_newsletter_now
 
 
 
 class MessageListView(LoginRequiredMixin, ListView):
     model = Message
-    template_name = 'core/message_list.html'
-    context_object_name = 'messages'
+    template_name = "core/message/message_list.html"
+    context_object_name = "message_list"
 
     def get_queryset(self):
         return Message.objects.annotate(
-            success_count=Count('sendattempt', filter=Q(sendattempt__status='success')),
-            fail_count=Count('sendattempt', filter=Q(sendattempt__status='fail'))
+            total_attempts=Count("newsletters__attempts"),
+            success_attempts=Count(
+                "newsletters__attempts",
+                filter=Q(newsletters__attempts__status="success")
+            ),
+            fail_attempts=Count(
+                "newsletters__attempts",
+                filter=Q(newsletters__attempts__status="fail")
+            ),
         )
+
 
 
 class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
     fields = ['subject', 'text']
-    template_name = 'core/message_create.html'
+    template_name = 'core/message/message_create.html'
     context_object_name = 'message'
     success_url = reverse_lazy('core:message_list')
 
@@ -98,6 +108,19 @@ class NewsletterListView(LoginRequiredMixin, ListView):
     template_name = 'core/newsletter/newsletter_list.html'
     context_object_name = 'newsletters'
 
+class ActiveNewsletterListView(LoginRequiredMixin, ListView):
+    template_name = 'core/newsletter/newsletter_active_list.html'
+    model = Newsletter
+    context_object_name = "newsletters"
+
+    def get_queryset(self):
+        now = timezone.now()
+        # фильтруем рассылки, которые активны на текущий момент
+        return Newsletter.objects.filter(
+            first_send_time__lte=now,
+            last_send_time__gte=now,
+            status='active'
+        )
 
 class NewsletterCreateView(LoginRequiredMixin, CreateView):
     model = Newsletter
@@ -143,6 +166,12 @@ class SendAttemptDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "attempt"
 
 
+from django.utils.timezone import now
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
+from django.db.models import Q
+from .models import Newsletter, Recipient, SendAttempt, Message  # добавляем модель Message
+
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "core/home.html"
 
@@ -150,10 +179,17 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         context["total_newsletters"] = Newsletter.objects.count()
-        context["active_newsletters"] = Newsletter.objects.filter(status='active').count()
+        active_filter = (
+            (Q(status='active') | Q(status='started')) &
+            Q(first_send_time__lte=now()) &
+            Q(last_send_time__gte=now())
+        )
+        context["active_newsletters"] = Newsletter.objects.filter(active_filter).count()
         context["unique_recipients"] = Recipient.objects.count()
         context["success_send_attempt_count"] = SendAttempt.objects.filter(status='success').count()
         context["fail_send_attempt_count"] = SendAttempt.objects.filter(status='fail').count()
+
+        context["all_messages"] = Message.objects.all()
 
         return context
 
@@ -178,16 +214,4 @@ def login_view(request):
 def logout_view(request):
     return HttpResponse("Заглушка: страница выхода")
 
-class ActiveNewsletterListView(LoginRequiredMixin, ListView):
-    template_name = 'core/newsletter/newsletter_active_list.html'
-    model = Newsletter
-    context_object_name = "newsletters"
 
-    def get_queryset(self):
-        now = timezone.now()
-        # фильтруем рассылки, которые активны на текущий момент
-        return Newsletter.objects.filter(
-            first_send_time__lte=now,
-            last_send_time__gte=now,
-            status='active'
-        ).order_by('first_send_time')

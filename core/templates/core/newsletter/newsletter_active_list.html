@@ -5,6 +5,7 @@
 {% block content %}
 <h1>Список активных рассылок</h1>
 
+{% if newsletters %}
 <table class="table table-striped">
     <thead>
     <tr>
@@ -24,29 +25,26 @@
                 {{ newsletter.status }}
             </a>
         </td>
-
         <td>{{ newsletter.first_send_time|date:"d/m/Y H:i" }}</td>
         <td>{{ newsletter.last_send_time|date:"d/m/Y H:i" }}</td>
         <td>{{ newsletter.message.subject }}</td>
-
         <td>
             {% for r in newsletter.recipients.all %}
-            {{ r.email }}{% if not forloop.last %}, {% endif %}
+                {{ r.email }}{% if not forloop.last %}, {% endif %}
             {% empty %}
-            —
+                —
             {% endfor %}
         </td>
-
         <td>
             <a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-sm btn-primary">Редактировать</a>
             <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-sm btn-danger">Удалить</a>
         </td>
     </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6" class="text-center">Нет рассылок</td>
-    </tr>
     {% endfor %}
     </tbody>
 </table>
+{% else %}
+<p>Нет активных рассылок</p>
+{% endif %}
+
 {% endblock %}
