@@ -17,9 +17,6 @@
         <tr>
             <th>ID</th>
             <th>Тема</th>
-            <th>Всего попыток</th>
-            <th>Успешно</th>
-            <th>Неудачно</th>
             <th>Действия</th>
         </tr>
     </thead>
@@ -28,11 +25,8 @@
         <tr>
             <td>{{ message.id }}</td>
             <td>{{ message.subject }}</td>
-            <td>{{ message.total_attempts }}</td>
-            <td>{{ message.success_attempts }}</td>
-            <td>{{ message.fail_attempts }}</td>
             <td>
-                <a href="{% url 'core:message_detail' message.id %}">Просмотр</a>
+                <a href="{% url 'core:message_detail' message.id %}" class="btn btn-primary">Просмотр</a>
             </td>
         </tr>
         {% endfor %}

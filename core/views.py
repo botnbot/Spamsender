@@ -1,18 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Q
-
-from core.models import Message, Recipient, Newsletter, SendAttempt
+from django.db.models import Count
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
-from django.views.generic import ListView, CreateView, DeleteView, DetailView, UpdateView, TemplateView
-
+from django.views.generic import ListView, CreateView, DeleteView, DetailView, UpdateView
+from django.views.generic import TemplateView
 
 from core.services.send_newsletter import send_newsletter_now
-
+from .forms import NewsletterForm
+from .models import Newsletter, Recipient, SendAttempt, Message
 
 
 class MessageListView(LoginRequiredMixin, ListView):
@@ -45,21 +45,21 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
 
 class MessageDeleteView(LoginRequiredMixin, DeleteView):
     model = Message
-    template_name = 'core/message_confirm_delete.html'
+    template_name = 'core/message/message_confirm_delete.html'
     success_url = reverse_lazy('core:message_list')
     context_object_name = 'message'
 
 
 class MessageDetailView(LoginRequiredMixin, DetailView):
     model = Message
-    template_name = 'core/message_detail.html'
+    template_name = 'core/message/message_detail.html'
     context_object_name = 'message'
 
 
 class MessageUpdateView(LoginRequiredMixin, UpdateView):
     model = Message
     fields = ['subject', 'text']
-    template_name = 'core/message_update.html'
+    template_name = 'core/message/message_update.html'
     context_object_name = 'message'
 
     def get_success_url(self):
@@ -69,7 +69,7 @@ class MessageUpdateView(LoginRequiredMixin, UpdateView):
 class RecipientUpdateView(LoginRequiredMixin, UpdateView):
     model = Recipient
     fields = ['email', 'name', 'comment']
-    template_name = 'core/recipient_update.html'
+    template_name = 'core/recipient/recipient_update.html'
     context_object_name = 'recipient'
 
     def get_success_url(self):
@@ -84,7 +84,7 @@ class RecipientListView(LoginRequiredMixin, ListView):
 
 class RecipientCreateView(LoginRequiredMixin, CreateView):
     model = Recipient
-    template_name = 'core/recipient_create.html'
+    template_name = 'core/recipient/recipient_create.html'
     fields = ['email', 'name', 'comment']
     success_url = reverse_lazy('core:recipient_list')
     context_object_name = 'recipient'
@@ -92,13 +92,13 @@ class RecipientCreateView(LoginRequiredMixin, CreateView):
 
 class RecipientDetailView(LoginRequiredMixin, DetailView):
     model = Recipient
-    template_name = 'core/recipient_detail.html'
+    template_name = 'core/recipient/recipient_detail.html'
     context_object_name = 'recipient'
 
 
 class RecipientDeleteView(LoginRequiredMixin, DeleteView):
     model = Recipient
-    template_name = 'core/recipient_confirm_delete.html'
+    template_name = 'core/recipient/recipient_confirm_delete.html'
     success_url = reverse_lazy('core:recipient_list')
     context_object_name = 'recipient'
 
@@ -115,32 +115,33 @@ class ActiveNewsletterListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         now = timezone.now()
-        # фильтруем рассылки, которые активны на текущий момент
-        return Newsletter.objects.filter(
-            first_send_time__lte=now,
-            last_send_time__gte=now,
-            status='active'
+        queryset = Newsletter.objects.filter(
+            (Q(status='active') | Q(status='started')) &
+            Q(first_send_time__lte=now) &
+            Q(last_send_time__gte=now)
         )
+        return queryset
+
 
 class NewsletterCreateView(LoginRequiredMixin, CreateView):
     model = Newsletter
-    fields = ['message', 'recipients', 'first_send_time', 'last_send_time']
-    template_name = 'core/newsletter_create.html'
+    form_class = NewsletterForm
+    template_name = 'core/newsletter/newsletter_create.html'
     success_url = reverse_lazy('core:newsletter_list')
     context_object_name = 'newsletter'
 
 
 class NewsletterDeleteView(LoginRequiredMixin, DeleteView):
     model = Newsletter
-    template_name = 'core/newsletter_confirm_delete.html'
+    template_name = 'core/newsletter/newsletter_confirm_delete.html'
     success_url = reverse_lazy('core:newsletter_list')
     context_object_name = 'newsletter'
 
 
 class NewsletterUpdateView(LoginRequiredMixin, UpdateView):
     model = Newsletter
-    fields = ['message', 'recipients', 'first_send_time', 'last_send_time']
-    template_name = 'core/newsletter_update.html'
+    form_class = NewsletterForm
+    template_name = 'core/newsletter/newsletter_update.html'
     success_url = reverse_lazy('core:newsletter_list')
     context_object_name = 'newsletter'
 
@@ -150,27 +151,21 @@ class NewsletterUpdateView(LoginRequiredMixin, UpdateView):
 
 class NewsletterDetailView(LoginRequiredMixin, DetailView):
     model = Newsletter
-    template_name = 'core/newsletter_detail.html'
+    template_name = 'core/newsletter/newsletter_detail.html'
     context_object_name = 'newsletter'
 
 
 class SendAttemptListView(LoginRequiredMixin, ListView):
     model = SendAttempt
-    template_name = "core/attempt_list.html"
+    template_name = "core/attempt/attempt_list.html"
     context_object_name = "attempts"
 
 
 class SendAttemptDetailView(LoginRequiredMixin, DetailView):
     model = SendAttempt
-    template_name = "core/attempt_detail.html"
+    template_name = "core/attempt/attempt_detail.html"
     context_object_name = "attempt"
 
-
-from django.utils.timezone import now
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
-from django.db.models import Q
-from .models import Newsletter, Recipient, SendAttempt, Message  # добавляем модель Message
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "core/home.html"
@@ -178,20 +173,30 @@ class HomeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        now = timezone.now()
+
+        # Все рассылки
         context["total_newsletters"] = Newsletter.objects.count()
-        active_filter = (
+
+        # Активные рассылки на текущий момент
+        active_newsletters_qs = Newsletter.objects.filter(
             (Q(status='active') | Q(status='started')) &
-            Q(first_send_time__lte=now()) &
-            Q(last_send_time__gte=now())
+            Q(first_send_time__lte=now) &
+            Q(last_send_time__gte=now)
         )
-        context["active_newsletters"] = Newsletter.objects.filter(active_filter).count()
+        context["active_newsletters_count"] = active_newsletters_qs.count()
+        context["active_newsletters_list"] = active_newsletters_qs  # если нужен список на странице
+
+        # Остальные показатели
         context["unique_recipients"] = Recipient.objects.count()
         context["success_send_attempt_count"] = SendAttempt.objects.filter(status='success').count()
         context["fail_send_attempt_count"] = SendAttempt.objects.filter(status='fail').count()
 
+        # Все сообщения
         context["all_messages"] = Message.objects.all()
 
         return context
+
 
 class NewsletterManualSendView(LoginRequiredMixin, View):
     def post(self, request, pk, success_count, fail_count):

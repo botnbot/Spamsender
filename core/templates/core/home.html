@@ -1,44 +1,82 @@
 {% extends "core/base.html" %}
-{% block title %}Домашняя страница{% endblock %}
+
+{% block title %}Главная страница{% endblock %}
 
 {% block content %}
-<h1><strong>SpamSender</strong></h1>
+    <div class="container mt-4">
+        <h1 class="mb-4">Добро пожаловать!</h1>
 
-<div class="links">
-    <a href="{% url 'core:newsletter_list' %}">
-        Всего рассылок {{ total_newsletters }}
-    </a>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        Общая информация
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+    <td colspan="2">
+        <a href="{% url 'core:newsletter_list' %}"
+           class="d-block info-table-link">
+            <strong>Всего рассылок:</strong> {{ total_newsletters }}
+        </a>
+    </td>
+</tr>
 
-    <a href="{% url 'core:active_newsletter_list' %}">
-        Активных рассылок {{ active_newsletters }}
-    </a>
+<tr>
+    <td colspan="2">
+        <a href="{% url 'core:active_newsletter_list' %}"
+           class="d-block info-table-link">
+            <strong>Активных рассылок:</strong> {{ active_newsletters_count }}
+        </a>
+    </td>
+</tr>
 
-    <a href="{% url 'core:recipient_list' %}">
-        Уникальных получателей {{ unique_recipients }}
-    </a>
+<tr>
+    <td colspan="2">
+        <a href="{% url 'core:recipient_list' %}"
+           class="d-block info-table-link">
+            <strong>Уникальных получателей:</strong> {{ unique_recipients }}
+        </a>
+    </td>
+</tr>
 
-    <a href="{% url 'core:message_list' %}">
-        Отправленных сообщений {{ success_send_attempt_count }}
-    </a>
+                                    <td colspan="2">
+                                        <strong>Успешных попыток отправки:</strong> {{ success_send_attempt_count }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <strong>Неудачных попыток отправки:</strong> {{ fail_send_attempt_count }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-    <a href="#">
-        Недоставленных сообщений {{ fail_send_attempt_count }}
-    </a>
-</div>
-
-{% endblock %}
-{% block extra_css%}
-<style>
-    div.links > a {
-        text-decoration: none !important;
-        color: black !important;
-        font-size: 20px;
-        text-align: left;
-        display: block !important;
-        margin-top: 1rem;
-    }
-    div.links > a:hover {
-     text-decoration: underline !important;
-    }
-</style>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        Сообщения
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for message in all_messages %}
+                                <li class="list-group-item">
+                                    <a href="{% url 'core:message_detail' message.pk %}" class="text-decoration-none">
+                                        <strong>ID:</strong> {{ message.id }} - {{ message.subject }}
+                                    </a>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item">Нет сообщений</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
