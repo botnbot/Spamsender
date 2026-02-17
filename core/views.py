@@ -154,6 +154,11 @@ class NewsletterDetailView(LoginRequiredMixin, DetailView):
     template_name = 'core/newsletter/newsletter_detail.html'
     context_object_name = 'newsletter'
 
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        obj.update_status()
+        return obj
+
 
 class SendAttemptListView(LoginRequiredMixin, ListView):
     model = SendAttempt
@@ -173,26 +178,21 @@ class HomeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        now = timezone.now()
 
-        # Все рассылки
         context["total_newsletters"] = Newsletter.objects.count()
 
-        # Активные рассылки на текущий момент
-        active_newsletters_qs = Newsletter.objects.filter(
-            (Q(status='active') | Q(status='started')) &
-            Q(first_send_time__lte=now) &
-            Q(last_send_time__gte=now)
+        context["active_newsletters"] = (
+            Newsletter.objects
+            .all()
+            .with_updated_status()
+            .filter(status=Newsletter.STATUS_STARTED)
+            .count()
         )
-        context["active_newsletters_count"] = active_newsletters_qs.count()
-        context["active_newsletters_list"] = active_newsletters_qs  # если нужен список на странице
 
-        # Остальные показатели
         context["unique_recipients"] = Recipient.objects.count()
         context["success_send_attempt_count"] = SendAttempt.objects.filter(status='success').count()
         context["fail_send_attempt_count"] = SendAttempt.objects.filter(status='fail').count()
 
-        # Все сообщения
         context["all_messages"] = Message.objects.all()
 
         return context
