@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 # Create your models here.
@@ -28,14 +29,26 @@ class Recipient(models.Model):
         verbose_name_plural = "получатели"
 
 
+class NewsletterQuerySet(models.QuerySet):
+    def with_updated_status(self):
+        for obj in self:
+            obj.update_status()
+        return self
+
 class Newsletter(models.Model):
+
+    STATUS_CREATED = "created"
+    STATUS_STARTED = "started"
+    STATUS_FINISHED = "finished"
+
     STATUS_CHOICES = [
-        ('created', 'Создана'),
-        ('started', 'Запущена'),
-        ('completed', 'Завершена'),
+        (STATUS_CREATED, 'Создана'),
+        (STATUS_STARTED, 'Запущена'),
+        (STATUS_FINISHED, 'Завершена'),
     ]
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='created')
-    first_send_time = models.DateTimeField(verbose_name="Дата первой отправки")
+
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=STATUS_CREATED)
+    first_send_time = models.DateTimeField(verbose_name="Дата начала отправки")
     last_send_time = models.DateTimeField(verbose_name="Дата окончания отправки")
     message = models.ForeignKey(
         to="Message",
@@ -52,12 +65,26 @@ class Newsletter(models.Model):
     def __str__(self):
         return f"Рассылка {self.id}— {self.get_status_display()}"
 
+    def update_status(self):
+        now = timezone.now()
+
+        if now < self.first_send_time:
+            new_status = self.STATUS_CREATED
+        elif self.first_send_time <= now <= self.last_send_time:
+            new_status = self.STATUS_STARTED
+        else:
+            new_status = self.STATUS_FINISHED
+
+        if self.status != new_status:
+            self.status = new_status
+            self.save(update_fields=["status"])
 
     class Meta:
         verbose_name = "рассылка"
         verbose_name_plural = "рассылки"
         ordering = ('-first_send_time',)
 
+    objects = NewsletterQuerySet.as_manager()
 
 class SendAttempt(models.Model):
     attempt_time = models.DateTimeField(auto_now_add=True, verbose_name="Время попытки отправки")
