@@ -36,9 +36,9 @@ DATABASES = {
     }
 }
 
-LOGIN_URL = 'core:login'
+LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'core:home'
-LOGOUT_REDIRECT_URL = 'core:login'
+LOGOUT_REDIRECT_URL = 'users:login'
 
 # Application definition
 

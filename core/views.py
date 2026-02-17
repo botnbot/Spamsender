@@ -1,8 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count
-from django.db.models import Q
-from django.http import HttpResponse
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -210,13 +208,5 @@ class NewsletterManualSendView(LoginRequiredMixin, View):
             fail_count += 1
 
         return redirect("core:newsletter_detail", pk=newsletter.pk)
-
-
-def login_view(request):
-    return HttpResponse("Заглушка: страница входа")
-
-
-def logout_view(request):
-    return HttpResponse("Заглушка: страница выхода")
 
 
