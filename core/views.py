@@ -158,6 +158,20 @@ class NewsletterDetailView(LoginRequiredMixin, DetailView):
         return obj
 
 
+class NewsletterManualSendView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        newsletter = get_object_or_404(Newsletter, pk=pk)
+
+        # Отправляем рассылку через сервис
+        success_count, fail_count = send_newsletter_now(newsletter)
+
+        messages.success(
+            request,
+            f"Рассылка выполнена. Успешно: {success_count}, Неудачно: {fail_count}"
+        )
+        return redirect("core:newsletter_detail", pk=newsletter.pk)
+
+
 class SendAttemptListView(LoginRequiredMixin, ListView):
     model = SendAttempt
     template_name = "core/attempt/attempt_list.html"
@@ -168,6 +182,24 @@ class SendAttemptDetailView(LoginRequiredMixin, DetailView):
     model = SendAttempt
     template_name = "core/attempt/attempt_detail.html"
     context_object_name = "attempt"
+
+
+class SuccessfulSendAttemptListView(LoginRequiredMixin, ListView):
+    model = SendAttempt
+    template_name = "core/attempt/success_attempt_list.html"
+    context_object_name = "attempts"
+
+    def get_queryset(self):
+        return SendAttempt.objects.filter(status="success")
+
+
+class FailedSendAttemptListView(LoginRequiredMixin, ListView):
+    model = SendAttempt
+    template_name = "core/attempt/failed_attempt_list.html"
+    context_object_name = "attempts"
+
+    def get_queryset(self):
+        return SendAttempt.objects.filter(status="fail")
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
@@ -196,17 +228,19 @@ class HomeView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class NewsletterManualSendView(LoginRequiredMixin, View):
-    def post(self, request, pk, success_count, fail_count):
-        newsletter = get_object_or_404(Newsletter, pk=pk)
-        try:
-            send_newsletter_now(newsletter)
-            messages.success(request, "Рассылка успешно отправлена вручную.")
-            success_count += 1
-        except Exception as e:
-            messages.error(request,f'Ошибка отправки {e}')
-            fail_count += 1
+# class NewsletterManualSendView(LoginRequiredMixin, View):
+#     def post(self, request, pk, success_count, fail_count):
+#         newsletter = get_object_or_404(Newsletter, pk=pk)
+#         try:
+#             send_newsletter_now(newsletter)
+#             messages.success(request, "Рассылка успешно отправлена вручную.")
+#             success_count += 1
+#         except Exception as e:
+#             messages.error(request,f'Ошибка отправки {e}')
+#             fail_count += 1
+#
+#         return redirect("core:newsletter_detail", pk=newsletter.pk)
 
-        return redirect("core:newsletter_detail", pk=newsletter.pk)
+
 
 

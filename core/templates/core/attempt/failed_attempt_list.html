@@ -1,0 +1,21 @@
+{% extends "core/base.html" %}
+
+{% block title %}Неудачные попытки{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Неудачные попытки рассылок</h2>
+    <ul class="list-group">
+        {% for attempt in attempts %}
+        <li class="list-group-item">
+            <strong>ID:</strong> {{ attempt.id }} |
+            <strong>Рассылка:</strong> {{ attempt.mailing }} |
+            <strong>Время:</strong> {{ attempt.attempt_time }} |
+            <strong>Ошибка:</strong> {{ attempt.server_response }}
+        </li>
+        {% empty %}
+        <li class="list-group-item">Нет неудачных попыток</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

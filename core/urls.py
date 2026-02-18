@@ -1,7 +1,10 @@
-from core.views import MessageListView, MessageDetailView, MessageCreateView, MessageUpdateView, MessageDeleteView, \
+from core.views import (
+    MessageListView, MessageDetailView, MessageCreateView, MessageUpdateView, MessageDeleteView, \
     RecipientListView, RecipientDetailView, RecipientCreateView, RecipientUpdateView, RecipientDeleteView, \
     NewsletterListView, NewsletterDetailView, NewsletterCreateView, NewsletterUpdateView, NewsletterManualSendView, \
-    NewsletterDeleteView, SendAttemptListView, SendAttemptDetailView, ActiveNewsletterListView
+    NewsletterDeleteView, ActiveNewsletterListView,
+    SendAttemptListView, SendAttemptDetailView, FailedSendAttemptListView,SuccessfulSendAttemptListView \
+    )
 from django.urls import path
 from .views import HomeView
 
@@ -32,6 +35,9 @@ urlpatterns = [
 
     path("attempts/", SendAttemptListView.as_view(), name="attempt_list"),
     path("attempts/<int:pk>/", SendAttemptDetailView.as_view(), name="attempt_detail"),
+    path("attempts/success/", SuccessfulSendAttemptListView.as_view(), name="success_attempt_list"),
+    path("attempts/fail/", FailedSendAttemptListView.as_view(), name="fail_attempt_list"),
+
     # path("attempts/<int:pk>/edit/", SendAttemptUpdateView.as_view(), name="attempt_update"),
     # path("attempts/<int:pk>/delete/", SendAttemptDeleteView.as_view(), name="attempt_confirm_delete"),
     # path("attempts/new/", SendAttemptCreateView.as_view(), name="attempt_create"),

@@ -43,11 +43,15 @@
                         </tr>
                         <tr>
                         <td colspan="2">
+                            <a href="{% url 'core:success_attempt_list' %}"
+                                   class="d-block info-table-link">
                             <strong>Успешных попыток отправки:</strong> {{ success_send_attempt_count }}
                         </td>
                         </tr>
                         <tr>
                             <td colspan="2">
+                                <a href="{% url 'core:fail_attempt_list' %}"
+                                   class="d-block info-table-link">
                                 <strong>Неудачных попыток отправки:</strong> {{ fail_send_attempt_count }}
                             </td>
                         </tr>
