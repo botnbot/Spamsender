@@ -114,8 +114,8 @@ class ActiveNewsletterListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         now = timezone.now()
         queryset = Newsletter.objects.filter(
-            (Q(status='active') | Q(status='started')) &
-            Q(first_send_time__lte=now) &
+            (Q(status='started')) &
+            Q(start_time__lte=now) &
             Q(last_send_time__gte=now)
         )
         return queryset

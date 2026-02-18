@@ -48,7 +48,7 @@ class Newsletter(models.Model):
     ]
 
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=STATUS_CREATED)
-    first_send_time = models.DateTimeField(verbose_name="Дата начала отправки")
+    start_time = models.DateTimeField(verbose_name="Дата начала отправки")
     last_send_time = models.DateTimeField(verbose_name="Дата окончания отправки")
     message = models.ForeignKey(
         to="Message",
@@ -68,9 +68,9 @@ class Newsletter(models.Model):
     def update_status(self):
         now = timezone.now()
 
-        if now < self.first_send_time:
+        if now < self.start_time:
             new_status = self.STATUS_CREATED
-        elif self.first_send_time <= now <= self.last_send_time:
+        elif self.start_time <= now <= self.last_send_time:
             new_status = self.STATUS_STARTED
         else:
             new_status = self.STATUS_FINISHED
@@ -82,7 +82,7 @@ class Newsletter(models.Model):
     class Meta:
         verbose_name = "рассылка"
         verbose_name_plural = "рассылки"
-        ordering = ('-first_send_time',)
+        ordering = ('-start_time',)
 
     objects = NewsletterQuerySet.as_manager()
 
