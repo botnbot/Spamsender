@@ -39,8 +39,4 @@ urlpatterns = [
     path("attempts/<int:pk>/", SendAttemptDetailView.as_view(), name="attempt_detail"),
     path("attempts/success/", SuccessfulSendAttemptListView.as_view(), name="success_attempt_list"),
     path("attempts/fail/", FailedSendAttemptListView.as_view(), name="fail_attempt_list"),
-
-    # path("attempts/<int:pk>/edit/", SendAttemptUpdateView.as_view(), name="attempt_update"),
-    # path("attempts/<int:pk>/delete/", SendAttemptDeleteView.as_view(), name="attempt_confirm_delete"),
-    # path("attempts/new/", SendAttemptCreateView.as_view(), name="attempt_create"),
 ]

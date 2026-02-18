@@ -9,8 +9,12 @@
         {% for attempt in attempts %}
         <li class="list-group-item">
             <strong>ID:</strong> {{ attempt.id }} |
-            <strong>Рассылка:</strong> <a href="{% url 'core:newsletter_detail' attempt.newsletter.pk %}">{{ attempt.newsletter.message.subject }} </a>
-            <strong>Время:</strong> {{ attempt.attempt_time }}
+            <strong>Рассылка:</strong>
+            <a href="{% url 'core:newsletter_detail' attempt.newsletter.pk %}">
+                {{ attempt.newsletter.message.subject }}
+            </a> |
+            <strong>Время:</strong> {{ attempt.attempt_time }} |
+            <strong>Ответ SMTP:</strong> {{ attempt.smtp_answer }}
         </li>
         {% empty %}
         <li class="list-group-item">Нет успешных попыток</li>
