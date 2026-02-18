@@ -35,8 +35,8 @@ class NewsletterQuerySet(models.QuerySet):
             obj.update_status()
         return self
 
-class Newsletter(models.Model):
 
+class Newsletter(models.Model):
     STATUS_CREATED = "created"
     STATUS_STARTED = "started"
     STATUS_FINISHED = "finished"
@@ -86,6 +86,7 @@ class Newsletter(models.Model):
 
     objects = NewsletterQuerySet.as_manager()
 
+
 class SendAttempt(models.Model):
     attempt_time = models.DateTimeField(auto_now_add=True, verbose_name="Время попытки отправки")
     recipient = models.ForeignKey(Recipient, on_delete=models.CASCADE, null=True, blank=True)
@@ -94,7 +95,7 @@ class SendAttempt(models.Model):
         ('fail', 'Не успешно'),
     ]
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='fail')
-    smtp_answer = models.TextField(blank=True, null=True,verbose_name='Ответ сервера')
+    smtp_answer = models.TextField(blank=True, null=True, verbose_name='Ответ сервера')
 
     newsletter = models.ForeignKey(
         to="Newsletter",
@@ -110,4 +111,3 @@ class SendAttempt(models.Model):
 
     def __str__(self):
         return f" {self.attempt_time} {self.status}"
-

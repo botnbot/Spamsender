@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError
+
 from core.models import Newsletter
 from core.services.send_newsletter import send_newsletter_now
+
 
 class Command(BaseCommand):
     help = "Отправка рассылки вручную"

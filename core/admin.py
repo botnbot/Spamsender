@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 
 from core.models import Message, Newsletter, Recipient, SendAttempt
@@ -8,7 +7,8 @@ from core.models import Message, Newsletter, Recipient, SendAttempt
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('id', 'subject')
-    search_fields = ('subject', )
+    search_fields = ('subject',)
+
 
 @admin.register(Recipient)
 class RecipientAdmin(admin.ModelAdmin):
@@ -29,9 +29,9 @@ class NewsletterAdmin(admin.ModelAdmin):
 
     get_recipients.short_description = "Получатели"
 
+
 @admin.register(SendAttempt)
 class SendAttemptAdmin(admin.ModelAdmin):
     list_display = ('id', 'attempt_time', 'status', 'smtp_answer', 'newsletter')
     search_fields = ('status', 'newsletter__message__subject')
     list_filter = ("status", 'attempt_time', 'smtp_answer', 'newsletter')
-

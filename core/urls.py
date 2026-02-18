@@ -1,11 +1,13 @@
-from core.views import (
-    MessageListView, MessageDetailView, MessageCreateView, MessageUpdateView, MessageDeleteView, \
-    RecipientListView, RecipientDetailView, RecipientCreateView, RecipientUpdateView, RecipientDeleteView, \
-    NewsletterListView, NewsletterDetailView, NewsletterCreateView, NewsletterUpdateView, NewsletterManualSendView, \
-    NewsletterDeleteView, ActiveNewsletterListView,
-    SendAttemptListView, SendAttemptDetailView, FailedSendAttemptListView,SuccessfulSendAttemptListView \
-    )
 from django.urls import path
+
+from core.views import (MessageListView, MessageDetailView, MessageCreateView, MessageUpdateView, MessageDeleteView,
+                        RecipientListView, RecipientDetailView, RecipientCreateView, RecipientUpdateView,
+                        RecipientDeleteView,
+                        NewsletterListView, NewsletterDetailView, NewsletterCreateView, NewsletterUpdateView,
+                        NewsletterManualSendView,
+                        NewsletterDeleteView, ActiveNewsletterListView,
+                        SendAttemptListView, SendAttemptDetailView, FailedSendAttemptListView,
+                        SuccessfulSendAttemptListView)
 from .views import HomeView
 
 app_name = 'core'

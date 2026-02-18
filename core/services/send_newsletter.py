@@ -4,6 +4,7 @@ from django.utils import timezone
 from config import settings
 from core.models import SendAttempt
 
+
 def send_newsletter_now(newsletter):
     message = newsletter.message
 

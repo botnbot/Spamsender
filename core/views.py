@@ -32,7 +32,6 @@ class MessageListView(LoginRequiredMixin, ListView):
         )
 
 
-
 class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
     fields = ['subject', 'text']
@@ -106,6 +105,7 @@ class NewsletterListView(LoginRequiredMixin, ListView):
     template_name = 'core/newsletter/newsletter_list.html'
     context_object_name = 'newsletters'
 
+
 class ActiveNewsletterListView(LoginRequiredMixin, ListView):
     template_name = 'core/newsletter/newsletter_active_list.html'
     model = Newsletter
@@ -114,10 +114,7 @@ class ActiveNewsletterListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         now = timezone.now()
         queryset = Newsletter.objects.filter(
-            (Q(status='started')) &
-            Q(start_time__lte=now) &
-            Q(last_send_time__gte=now)
-        )
+            (Q(status='started')) & Q(start_time__lte=now) & Q(last_send_time__gte=now))
         return queryset
 
 
@@ -208,7 +205,6 @@ class HomeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-
         context["total_newsletters"] = Newsletter.objects.count()
 
         context["active_newsletters"] = (
@@ -227,7 +223,6 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
         return context
 
-
 # class NewsletterManualSendView(LoginRequiredMixin, View):
 #     def post(self, request, pk, success_count, fail_count):
 #         newsletter = get_object_or_404(Newsletter, pk=pk)
@@ -240,7 +235,3 @@ class HomeView(LoginRequiredMixin, TemplateView):
 #             fail_count += 1
 #
 #         return redirect("core:newsletter_detail", pk=newsletter.pk)
-
-
-
-

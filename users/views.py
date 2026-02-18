@@ -11,6 +11,7 @@ class RegisterView(CreateView):
     form_class = RegisterForm
     success_url = reverse_lazy("core:home")
 
+
 class CustomLogoutView(LogoutView):
     def dispatch(self, request, *args, **kwargs):
         messages.success(request, "Вы вышли из системы")

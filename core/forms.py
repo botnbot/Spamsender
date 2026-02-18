@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from .models import Newsletter
 
+
 class NewsletterForm(forms.ModelForm):
     class Meta:
         model = Newsletter
@@ -19,7 +20,6 @@ class NewsletterForm(forms.ModelForm):
                 }
             ),
         }
-
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
