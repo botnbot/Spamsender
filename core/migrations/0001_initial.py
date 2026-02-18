@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
                         max_length=15,
                     ),
                 ),
-                ("first_send_time", models.DateTimeField(verbose_name="Дата начала отправки")),
+                ("start_time", models.DateTimeField(verbose_name="Дата начала отправки")),
                 ("last_send_time", models.DateTimeField(verbose_name="Дата окончания отправки")),
                 (
                     "message",
@@ -67,7 +67,7 @@ class Migration(migrations.Migration):
             options={
                 "verbose_name": "рассылка",
                 "verbose_name_plural": "рассылки",
-                "ordering": ("-first_send_time",),
+                "ordering": ("-start_time",),
             },
         ),
         migrations.CreateModel(

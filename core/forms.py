@@ -8,7 +8,7 @@ class NewsletterForm(forms.ModelForm):
         model = Newsletter
         fields = "__all__"
         widgets = {
-            "first_send_time": forms.DateTimeInput(
+            "start_time": forms.DateTimeInput(
                 attrs={
                     "type": "datetime-local",
                 }
@@ -23,13 +23,13 @@ class NewsletterForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in ["first_send_time", "last_send_time"]:
+        for field in ["start_time", "last_send_time"]:
             self.fields[field].input_formats = ["%Y-%m-%dT%H:%M"]
 
     def clean(self):
         cleaned_data = super().clean()
 
-        first = cleaned_data.get("first_send_time")
+        first = cleaned_data.get("start_time")
         last = cleaned_data.get("last_send_time")
 
         if first and last and last <= first:
@@ -37,7 +37,7 @@ class NewsletterForm(forms.ModelForm):
 
         if first and first < timezone.now():
             self.add_error(
-                "first_send_time",
+                "start_time",
                 "Дата начала не может быть в прошлом."
             )
 

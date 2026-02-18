@@ -19,9 +19,9 @@ class RecipientAdmin(admin.ModelAdmin):
 
 @admin.register(Newsletter)
 class NewsletterAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_send_time', 'last_send_time', 'status', 'message', 'get_recipients')
+    list_display = ('id', 'start_time', 'last_send_time', 'status', 'message', 'get_recipients')
     search_fields = ('status',)
-    list_filter = ("status", 'first_send_time', 'last_send_time',)
+    list_filter = ("status", 'start_time', 'last_send_time',)
     filter_horizontal = ("recipients",)
 
     def get_recipients(self, obj):
