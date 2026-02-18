@@ -7,52 +7,51 @@
     <h1 class="mb-4">Добро пожаловать!</h1>
 
     <div class="row">
+        <!-- Колонка Общая информация -->
         <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4>Общая информация</h4>
+                <a href="{% url 'core:newsletter_create' %}" class="btn btn-primary btn-sm">
+                    Создать рассылку
+                </a>
+            </div>
             <div class="card mb-3">
-                <div class="card-header">
-                    Общая информация
-                </div>
                 <div class="card-body">
                     <table class="table table-striped">
                         <tbody>
                         <tr>
                             <td colspan="2">
-                                <a href="{% url 'core:newsletter_list' %}"
-                                   class="d-block info-table-link">
+                                <a href="{% url 'core:newsletter_list' %}" class="d-block info-table-link">
                                     <strong>Всего рассылок:</strong> {{ total_newsletters }}
                                 </a>
                             </td>
                         </tr>
-
                         <tr>
                             <td colspan="2">
-                                <a href="{% url 'core:active_newsletter_list' %}"
-                                   class="d-block info-table-link">
+                                <a href="{% url 'core:active_newsletter_list' %}" class="d-block info-table-link">
                                     <strong>Активных рассылок:</strong> {{ active_newsletters }}
                                 </a>
                             </td>
                         </tr>
-
                         <tr>
                             <td colspan="2">
-                                <a href="{% url 'core:recipient_list' %}"
-                                   class="d-block info-table-link">
+                                <a href="{% url 'core:recipient_list' %}" class="d-block info-table-link">
                                     <strong>Уникальных получателей:</strong> {{ unique_recipients }}
                                 </a>
                             </td>
                         </tr>
                         <tr>
-                        <td colspan="2">
-                            <a href="{% url 'core:success_attempt_list' %}"
-                                   class="d-block info-table-link">
-                            <strong>Успешных попыток отправки:</strong> {{ success_send_attempt_count }}
-                        </td>
+                            <td colspan="2">
+                                <a href="{% url 'core:success_attempt_list' %}" class="d-block info-table-link">
+                                    <strong>Успешных попыток отправки:</strong> {{ success_send_attempt_count }}
+                                </a>
+                            </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <a href="{% url 'core:fail_attempt_list' %}"
-                                   class="d-block info-table-link">
-                                <strong>Неудачных попыток отправки:</strong> {{ fail_send_attempt_count }}
+                                <a href="{% url 'core:fail_attempt_list' %}" class="d-block info-table-link">
+                                    <strong>Неудачных попыток отправки:</strong> {{ fail_send_attempt_count }}
+                                </a>
                             </td>
                         </tr>
                         </tbody>
@@ -61,11 +60,15 @@
             </div>
         </div>
 
+        <!-- Колонка Сообщения -->
         <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4>Сообщения</h4>
+                <a href="{% url 'core:message_create' %}" class="btn btn-primary btn-sm">
+                    Создать сообщение
+                </a>
+            </div>
             <div class="card mb-3">
-                <div class="card-header">
-                    Сообщения
-                </div>
                 <div class="card-body">
                     <ul class="list-group">
                         {% for message in all_messages %}
