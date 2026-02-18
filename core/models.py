@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -11,15 +12,27 @@ class Message(models.Model):
     def __str__(self):
         return f"Тема {self.subject}"
 
+
     class Meta:
         verbose_name = "сообщение"
         verbose_name_plural = "сообщения"
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                              on_delete=models.CASCADE,
+                              related_name='mesages',
+                              verbose_name='Владелец'
+                              )
 
 
 class Recipient(models.Model):
     email = models.EmailField(unique=True, verbose_name='email')
     name = models.CharField(max_length=150, verbose_name='Имя')
     comment = models.TextField(blank=True, null=True, verbose_name="Комментарий")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                              on_delete=models.CASCADE,
+                              related_name='Recipients',
+                              verbose_name='Владелец'
+                              )
 
     def __str__(self):
         return f"{self.name} <{self.email}>"
@@ -36,6 +49,7 @@ class NewsletterQuerySet(models.QuerySet):
         return self
 
 
+
 class Newsletter(models.Model):
     STATUS_CREATED = "created"
     STATUS_STARTED = "started"
@@ -50,6 +64,12 @@ class Newsletter(models.Model):
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=STATUS_CREATED)
     start_time = models.DateTimeField(verbose_name="Дата начала отправки")
     last_send_time = models.DateTimeField(verbose_name="Дата окончания отправки")
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='newsletters',
+        verbose_name='Владелец'
+    )
     message = models.ForeignKey(
         to="Message",
         on_delete=models.CASCADE,

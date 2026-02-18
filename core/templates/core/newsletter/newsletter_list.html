@@ -8,17 +8,19 @@
 <table class="table table-striped">
     <thead>
     <tr>
+        <th>ID</th>
         <th>Статус</th>
         <th>Начало рассылки</th>
         <th>Окончание рассылки</th>
         <th>Тема рассылки</th>
         <th>Получатели</th>
-        <th>Действия</th>
+        <th>  </th>
     </tr>
     </thead>
     <tbody>
     {% for newsletter in newsletters %}
     <tr>
+        <td>{{ newsletter.id }}</td>
         <td>
             <a href="{% url 'core:newsletter_detail' newsletter.pk %}">
                 {{ newsletter.status }}
@@ -38,6 +40,7 @@
         </td>
 
         <td>
+            <a href="{% url 'core:newsletter_detail' newsletter.pk %}" class="btn btn-sm btn-primary">Подробнее</a>
             <a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-sm btn-primary">Редактировать</a>
             <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-sm btn-danger">Удалить</a>
         </td>
@@ -47,6 +50,7 @@
         <td colspan="6" class="text-center">Нет рассылок</td>
     </tr>
     {% endfor %}
+    <a href="{% url 'core:home' %}" class="btn btn-secondary">Отмена</a>
     </tbody>
 </table>
 

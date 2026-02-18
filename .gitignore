@@ -137,3 +137,4 @@ data/out/
 __pycache__
 /media/
 /django_project_checklist.md
+.flake8
