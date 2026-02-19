@@ -7,7 +7,7 @@ from .models import Newsletter
 class NewsletterForm(forms.ModelForm):
     class Meta:
         model = Newsletter
-        fields = "__all__"
+        exclude = ("owner",)
         widgets = {
             "start_time": forms.DateTimeInput(
                 attrs={
