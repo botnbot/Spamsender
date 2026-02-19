@@ -26,7 +26,10 @@
             <td>{{ message.id }}</td>
             <td>{{ message.subject }}</td>
             <td>
-                <a href="{% url 'core:message_detail' message.id %}" class="btn btn-primary">Просмотр</a>
+                <a href="{% url 'core:message_detail' message.id %}" class="btn btn-sm btn-primary">Подробнее</a>
+                <a href="{% url 'core:message_update' message.id %}" class="btn btn-sm btn-primary">Редактировать</a>
+                <a href="{% url 'core:message_create' %}" class="btn btn-sm btn-success">Создать</a>
+                <a href="{% url 'core:message_delete' message.id %}" class="btn btn-sm btn-danger">Удалить</a>
             </td>
         </tr>
         {% endfor %}
@@ -35,5 +38,5 @@
 {% else %}
 <p>Нет сообщений</p>
 {% endif %}
-<a href="{% url 'core:home' %}" class="btn btn-secondary">Отмена</a>
+<a href="{% url 'core:home' %}" class="btn btn-secondary">На главную</a>
 {% endblock %}

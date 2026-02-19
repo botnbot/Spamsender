@@ -20,13 +20,13 @@
     <tbody>
     {% for newsletter in newsletters %}
     <tr>
-        <td>{{ newsletter.id }}</td>
         <td>
-            <a href="{% url 'core:newsletter_detail' newsletter.pk %}">
-                {{ newsletter.status }}
+            <a
+                    href="{% url 'core:newsletter_detail' newsletter.pk %}">
+            {{ newsletter.id }}
             </a>
         </td>
-
+        <td>{{ newsletter.status }}</td>
         <td>{{ newsletter.start_time|date:"d/m/Y H:i" }}</td>
         <td>{{ newsletter.last_send_time|date:"d/m/Y H:i" }}</td>
         <td>{{ newsletter.message.subject }}</td>
@@ -42,7 +42,8 @@
         <td>
             <a href="{% url 'core:newsletter_detail' newsletter.pk %}" class="btn btn-sm btn-primary">Подробнее</a>
             <a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-sm btn-primary">Редактировать</a>
-            <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+            <a href="{% url 'core:newsletter_create' %}" class="btn btn-sm btn-success mt-2">Создать новую рассылку</a>
+            <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-sm btn-danger mt-2">Удалить</a>
         </td>
     </tr>
     {% empty %}
@@ -50,9 +51,8 @@
         <td colspan="6" class="text-center">Нет рассылок</td>
     </tr>
     {% endfor %}
-    <a href="{% url 'core:home' %}" class="btn btn-secondary">Отмена</a>
     </tbody>
 </table>
+<a href="{% url 'core:home' %}" class="btn btn-secondary mt-3">На главную</a>
 
-<a href="{% url 'core:newsletter_create' %}" class="btn btn-success mt-3">Создать новую рассылку</a>
 {% endblock %}

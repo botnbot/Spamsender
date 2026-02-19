@@ -10,6 +10,7 @@
         <tr>
             <th>ФИО</th>
             <th>email</th>
+            <th>Комментарий</th>
             <th>Действия</th>
         </tr>
     </thead>
@@ -23,8 +24,11 @@
                 </a>
             </td>
             <td>{{ recipient.email }}</td>
+            <td>{{ recipient.comment|truncatechars:50 }}</td>
             <td>
+                <a href="{% url 'core:recipient_detail' recipient.id %}" class="btn btn-sm btn-primary">Подробнее</a>
                 <a href="{% url 'core:recipient_update' recipient.pk %}" class="btn btn-sm btn-primary">Редактировать</a>
+                <a href="{% url 'core:recipient_create' %}" class="btn btn-sm btn-success">Добавить</a>
                 <a href="{% url 'core:recipient_delete' recipient.pk %}" class="btn btn-sm btn-danger">Удалить</a>
             </td>
         </tr>
@@ -35,7 +39,7 @@
         {% endfor %}
     </tbody>
 </table>
-
-<a href="{% url 'core:recipient_create' %}" class="btn btn-success mt-3">Создать нового получателя</a>
+<a href="{% url 'core:home' %}" class="btn btn-secondary mt-3">На главную</a>
+<a href="{% url 'core:recipient_create' %}" class="btn btn-success mt-3">Добавить нового получателя</a>
 {% endblock %}
 
