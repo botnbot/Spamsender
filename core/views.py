@@ -278,9 +278,18 @@ class HomeView(LoginRequiredMixin, TemplateView):
         )
 
         context["unique_recipients"] = Recipient.objects.filter(owner=user).count()
-        context["success_send_attempt_count"] = SendAttempt.objects.filter(status='success', owner=user).count()
-        context["fail_send_attempt_count"] = SendAttempt.objects.filter(status='fail', owner=user).count()
 
-        context["all_messages"] = Message.objects.all(owner=user)
+        context["success_send_attempt_count"] = SendAttempt.objects.filter(
+            status='success',
+            newsletter__owner=user
+        ).count()
+
+        context["fail_send_attempt_count"] = SendAttempt.objects.filter(
+            status='fail',
+            newsletter__owner=user
+        ).count()
+
+        context["all_messages"] = Message.objects.filter(owner=user)
 
         return context
+
