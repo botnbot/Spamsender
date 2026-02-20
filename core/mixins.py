@@ -5,7 +5,7 @@ class StaffAccessMixin:
     """
     def filter_by_staff(self, queryset):
         user = self.request.user
-        if user.is_staff:
+        if user.is_staff or user.groups.filter(name="Managers").exists():
             return queryset
         return queryset.filter(owner=user)
 
