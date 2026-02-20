@@ -192,7 +192,7 @@ class NewsletterManualSendView(LoginRequiredMixin, OwnerQuerysetMixin, View):
         return redirect("core:newsletter_detail", pk=newsletter.pk)
 
 
-class SendAttemptListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
+class SendAttemptListView(LoginRequiredMixin, ListView):
     model = SendAttempt
     template_name = "core/attempt/attempt_list.html"
     context_object_name = "attempts"
@@ -208,31 +208,31 @@ class SendAttemptListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
 
 
 
-class SendAttemptDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
+class SendAttemptDetailView(LoginRequiredMixin, DetailView):
     model = SendAttempt
     template_name = "core/attempt/attempt_detail.html"
     context_object_name = "attempt"
 
 
-class SuccessfulSendAttemptListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
+class SuccessfulSendAttemptListView(LoginRequiredMixin, ListView):
     model = SendAttempt
     template_name = "core/attempt/success_attempt_list.html"
     context_object_name = "attempts"
 
     def get_queryset(self):
-        qs = super.get_queryset().filter("success")
+        qs = super.get_queryset().filter(status="success")
         if self.request.user.is_staff:
             return qs
         return qs.filter(newsletter__owner=self.request.user)
 
 
-class FailedSendAttemptListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
+class FailedSendAttemptListView(LoginRequiredMixin, ListView):
     model = SendAttempt
     template_name = "core/attempt/failed_attempt_list.html"
     context_object_name = "attempts"
 
     def get_queryset(self):
-        qs = super.get_queryset().filter("fail")
+        qs = super.get_queryset().filter(status="fail")
         if self.request.user.is_staff:
             return qs
         return qs.filter(newsletter__owner=self.request.user)
