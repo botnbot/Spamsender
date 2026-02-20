@@ -16,6 +16,9 @@ class Message(models.Model):
     class Meta:
         verbose_name = "сообщение"
         verbose_name_plural = "сообщения"
+        permissions = [
+            ("view_all_messages", "Может просматривать все сообщения"),
+        ]
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
                               on_delete=models.CASCADE,
@@ -40,6 +43,9 @@ class Recipient(models.Model):
     class Meta:
         verbose_name = "получатель"
         verbose_name_plural = "получатели"
+        permissions = [
+            ("view_all_recipients", "Может просматривать всех получателей"),
+        ]
 
 
 class NewsletterQuerySet(models.QuerySet):
@@ -103,6 +109,9 @@ class Newsletter(models.Model):
         verbose_name = "рассылка"
         verbose_name_plural = "рассылки"
         ordering = ('-start_time',)
+        permissions = [
+            ("view_all_newsletters", "Может просматривать все рассылки"),
+        ]
 
     objects = NewsletterQuerySet.as_manager()
 
