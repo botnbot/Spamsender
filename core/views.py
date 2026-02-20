@@ -142,6 +142,11 @@ class NewsletterCreateView(LoginRequiredMixin, CreateView):
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
 
 class NewsletterDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
     model = Newsletter
@@ -159,6 +164,11 @@ class NewsletterUpdateView(LoginRequiredMixin, OwnerQuerysetMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('core:newsletter_detail', kwargs={'pk': self.object.pk})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
 
 class NewsletterDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
