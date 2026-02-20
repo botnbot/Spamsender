@@ -1,7 +1,7 @@
 from django import forms
 from django.utils import timezone
 
-from .models import Newsletter
+from .models import Newsletter, Recipient, Message
 
 
 class NewsletterForm(forms.ModelForm):
@@ -22,9 +22,15 @@ class NewsletterForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+
         for field in ["start_time", "last_send_time"]:
             self.fields[field].input_formats = ["%Y-%m-%dT%H:%M"]
+
+        if self.user and not self.user.is_staff:
+            self.fields["recipients"].queryset = Recipient.objects.filter(owner=self.user)
+            self.fields["message"].queryset = Message.objects.filter(owner=self.user)
 
     def clean(self):
         cleaned_data = super().clean()
