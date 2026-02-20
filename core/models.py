@@ -33,7 +33,7 @@ class Recipient(models.Model):
     comment = models.TextField(blank=True, null=True, verbose_name="Комментарий")
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
                               on_delete=models.CASCADE,
-                              related_name='Recipients',
+                              related_name='recipients',
                               verbose_name='Владелец'
                               )
 
