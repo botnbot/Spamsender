@@ -1,20 +1,20 @@
-class StaffAccessMixin:
-    """
-        Сотрудник видит все.
-        Пользователь — только свои объекты.
-    """
-    def filter_by_staff(self, queryset):
-        user = self.request.user
-        if user.is_staff or user.groups.filter(name="Managers").exists():
-            return queryset
-        return queryset.filter(owner=user)
-
-
-class OwnerQuerysetMixin(StaffAccessMixin):
+class OwnerQuerysetMixin():
     """
      Автоматическая фильтрация queryset по роли.
     """
+
+    def is_manager(self, user):
+        return user.groups.filter(name="Managers").exists()
+
     def get_queryset(self):
         qs = super().get_queryset()
-        return self.filter_by_staff(qs)
+        user = self.request.user
+        if user.is_staff or self.is_manager(user):
+            return qs
 
+        return qs.filter(owner=user)
+
+class OwnerEditMixin:
+
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
