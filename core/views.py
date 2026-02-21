@@ -10,7 +10,7 @@ from django.views.generic import TemplateView
 
 from core.services.send_newsletter import send_newsletter_now
 from .forms import NewsletterForm
-from .mixins import OwnerQuerysetMixin
+from .mixins import OwnerQuerysetMixin, OwnerEditMixin
 from .models import Newsletter, Recipient, SendAttempt, Message
 
 
@@ -46,7 +46,7 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MessageDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
+class MessageDeleteView(LoginRequiredMixin, OwnerEditMixin, DeleteView):
     model = Message
     template_name = 'core/message/message_confirm_delete.html'
     success_url = reverse_lazy('core:message_list')
@@ -59,7 +59,7 @@ class MessageDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
     context_object_name = 'message'
 
 
-class MessageUpdateView(LoginRequiredMixin, OwnerQuerysetMixin, UpdateView):
+class MessageUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
     model = Message
     fields = ['subject', 'text']
     template_name = 'core/message/message_update.html'
@@ -69,7 +69,7 @@ class MessageUpdateView(LoginRequiredMixin, OwnerQuerysetMixin, UpdateView):
         return reverse_lazy('core:message_detail', kwargs={'pk': self.object.pk})
 
 
-class RecipientUpdateView(LoginRequiredMixin, OwnerQuerysetMixin, UpdateView):
+class RecipientUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
     model = Recipient
     fields = ['email', 'name', 'comment']
     template_name = 'core/recipient/recipient_update.html'
@@ -103,7 +103,7 @@ class RecipientDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
     context_object_name = 'recipient'
 
 
-class RecipientDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
+class RecipientDeleteView(LoginRequiredMixin, OwnerEditMixin, DeleteView):
     model = Recipient
     template_name = 'core/recipient/recipient_confirm_delete.html'
     success_url = reverse_lazy('core:recipient_list')
@@ -148,14 +148,14 @@ class NewsletterCreateView(LoginRequiredMixin, CreateView):
         return kwargs
 
 
-class NewsletterDeleteView(LoginRequiredMixin, OwnerQuerysetMixin, DeleteView):
+class NewsletterDeleteView(LoginRequiredMixin, OwnerEditMixin, DeleteView):
     model = Newsletter
     template_name = 'core/newsletter/newsletter_confirm_delete.html'
     success_url = reverse_lazy('core:newsletter_list')
     context_object_name = 'newsletter'
 
 
-class NewsletterUpdateView(LoginRequiredMixin, OwnerQuerysetMixin, UpdateView):
+class NewsletterUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
     model = Newsletter
     form_class = NewsletterForm
     template_name = 'core/newsletter/newsletter_update.html'
@@ -182,19 +182,14 @@ class NewsletterDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
         return obj
 
 
-class NewsletterManualSendView(LoginRequiredMixin, OwnerQuerysetMixin, View):
+class NewsletterManualSendView(LoginRequiredMixin, OwnerEditMixin, View):
     def post(self, request, pk):
         newsletter = get_object_or_404(
-            Newsletter,
+            self.get_queryset(),
             pk=pk,
         )
-
-        if not request.user.is_staff and newsletter.owner != request.user:
-            return redirect("core:newsletter_list")
-
         # Отправляем рассылку через сервис
         success_count, fail_count = send_newsletter_now(newsletter)
-
         messages.success(
             request,
             f"Рассылка выполнена. Успешно: {success_count}, Неудачно: {fail_count}"
@@ -208,14 +203,12 @@ class SendAttemptListView(LoginRequiredMixin, ListView):
     context_object_name = "attempts"
 
     def get_queryset(self):
-        qs = super.get_queryset()
-        user=self.request.user
+        qs = super().get_queryset()
+        user = self.request.user
 
-        if user.is_staff:
+        if user.is_staff or user.groups.filter(name="Managers").exists():
             return qs
-
-        return qs.filter(newsletter_owner=user)
-
+        return qs.filter(newsletter__owner=user)
 
 
 class SendAttemptDetailView(LoginRequiredMixin, DetailView):
@@ -230,8 +223,9 @@ class SuccessfulSendAttemptListView(LoginRequiredMixin, ListView):
     context_object_name = "attempts"
 
     def get_queryset(self):
-        qs = super.get_queryset().filter(status="success")
-        if self.request.user.is_staff:
+        qs = super().get_queryset().filter(status="success")
+        user = self.request.user
+        if user.is_staff or user.groups.filter(name="Managers").exists():
             return qs
         return qs.filter(newsletter__owner=self.request.user)
 
@@ -242,8 +236,9 @@ class FailedSendAttemptListView(LoginRequiredMixin, ListView):
     context_object_name = "attempts"
 
     def get_queryset(self):
-        qs = super.get_queryset().filter(status="fail")
-        if self.request.user.is_staff:
+        qs = super().get_queryset().filter(status="fail")
+        user = self.request.user
+        if user.is_staff or user.groups.filter(name="Managers").exists():
             return qs
         return qs.filter(newsletter__owner=self.request.user)
 
@@ -266,7 +261,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
         )
 
         context["unique_recipients"] = Recipient.objects.filter(owner=user).count()
-        context["success_send_attempt_count"] = SendAttempt.objects.filter(status='success', newsletter__owner=user).count()
+        context["success_send_attempt_count"] = SendAttempt.objects.filter(status='success',
+                                                                           newsletter__owner=user).count()
         context["fail_send_attempt_count"] = SendAttempt.objects.filter(status='fail', newsletter__owner=user).count()
 
         context["all_messages"] = Message.objects.filter(owner=user)

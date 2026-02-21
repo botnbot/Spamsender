@@ -32,5 +32,3 @@ class Command(BaseCommand):
                 ))
         except Newsletter.DoesNotExist:
             raise CommandError(f"Рассылка с ID {pk} не существует")
-
-

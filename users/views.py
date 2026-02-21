@@ -89,6 +89,5 @@ class ActivateUserView(View):
         return redirect("users:login")
 
 
-
 class RegisterDoneView(TemplateView):
     template_name = "users/register_done.html"
