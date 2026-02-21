@@ -12,7 +12,6 @@ class Message(models.Model):
     def __str__(self):
         return f"Тема {self.subject}"
 
-
     class Meta:
         verbose_name = "сообщение"
         verbose_name_plural = "сообщения"
@@ -22,13 +21,13 @@ class Message(models.Model):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
                               on_delete=models.CASCADE,
-                              related_name='mesages',
+                              related_name='messages',
                               verbose_name='Владелец'
                               )
 
 
 class Recipient(models.Model):
-    email = models.EmailField(unique=True, verbose_name='email')
+    email = models.EmailField(verbose_name='email')
     name = models.CharField(max_length=150, verbose_name='Имя')
     comment = models.TextField(blank=True, null=True, verbose_name="Комментарий")
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
@@ -41,6 +40,7 @@ class Recipient(models.Model):
         return f"{self.name} <{self.email}>"
 
     class Meta:
+        unique_together = [("email", "owner")]
         verbose_name = "получатель"
         verbose_name_plural = "получатели"
         permissions = [
@@ -53,7 +53,6 @@ class NewsletterQuerySet(models.QuerySet):
         for obj in self:
             obj.update_status()
         return self
-
 
 
 class Newsletter(models.Model):
