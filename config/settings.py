@@ -21,7 +21,7 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-if not os.getenv("POSTGRES_DB") or not ("POSTGRES_PASSWORD") or not ("POSTGRES_USER"):
+if not os.getenv("POSTGRES_DB") or not os.getenv("POSTGRES_PASSWORD") or not os.getenv("POSTGRES_USER"):
     raise RuntimeError("Переменные окружения POSTGRES_DB не заданы")
 
 DATABASES = {
@@ -144,3 +144,11 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "spamsender-cache",
+    }
+}
+

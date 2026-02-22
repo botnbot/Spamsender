@@ -14,6 +14,7 @@ class OwnerQuerysetMixin():
 
         return qs.filter(owner=user)
 
+
 class OwnerEditMixin:
 
     def get_queryset(self):
