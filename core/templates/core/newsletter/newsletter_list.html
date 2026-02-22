@@ -40,10 +40,10 @@
         </td>
 
         <td>
-            <a href="{% url 'core:newsletter_detail' newsletter.pk %}" class="btn btn-sm btn-primary">Подробнее</a>
-            <a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-sm btn-primary">Редактировать</a>
-            <a href="{% url 'core:newsletter_create' %}" class="btn btn-sm btn-success mt-2">Создать новую рассылку</a>
-            <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-sm btn-danger mt-2">Удалить</a>
+            <a href="{% url 'core:newsletter_detail' newsletter.pk %}" class="btn btn-sm btn-primary mb-1">Подробнее</a>
+            <a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-sm btn-primary mb-1">Редактировать</a>
+            <a href="{% url 'core:newsletter_create' %}" class="btn btn-sm btn-success mb-1">Создать новую рассылку</a>
+            <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-sm btn-danger mb-1">Удалить</a>
         </td>
     </tr>
     {% empty %}

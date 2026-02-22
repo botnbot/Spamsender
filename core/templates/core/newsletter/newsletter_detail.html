@@ -23,23 +23,23 @@
 </ul>
 <hr>
 
-<a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-primary">
+<a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-primary mb-1">
     Редактировать
 </a>
 
 <form action="{% url 'core:newsletter_manual_send' newsletter.pk %}" method="post">
     {% csrf_token %}
-    <button type="submit" class="btn btn-primary">
+    <button type="submit" class="btn btn-primary mb-1">
         Отправить сейчас вручную
     </button>
 </form>
 
 
-<a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-danger">
+<a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-danger mb-1">
     Удалить
 </a>
 
-<a href="{% url 'core:newsletter_list' %}" class="btn btn-secondary">
+<a href="{% url 'core:newsletter_list' %}" class="btn btn-secondary mb-1" >
     Назад к списку
 </a>
 {% endblock %}
