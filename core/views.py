@@ -182,18 +182,21 @@ class NewsletterDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
         return obj
 
 
-class NewsletterManualSendView(LoginRequiredMixin, OwnerEditMixin, View):
+class NewsletterManualSendView(LoginRequiredMixin, View):
+
     def post(self, request, pk):
-        newsletter = get_object_or_404(
-            self.get_queryset(),
-            pk=pk,
-        )
-        # Отправляем рассылку через сервис
+        newsletter = get_object_or_404(Newsletter, pk=pk)
+
+        if not request.user.is_staff and newsletter.owner != request.user:
+            return redirect("core:newsletter_list")
+
         success_count, fail_count = send_newsletter_now(newsletter)
+
         messages.success(
             request,
             f"Рассылка выполнена. Успешно: {success_count}, Неудачно: {fail_count}"
         )
+
         return redirect("core:newsletter_detail", pk=newsletter.pk)
 
 
