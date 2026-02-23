@@ -8,6 +8,32 @@
     <h5 class="mb-4">Сервис для массовой отправки сообщений</h5>
 
     <div class="row">
+
+        <!-- Колонка Сообщения  -->
+        <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4>Сообщения</h4>
+                <a href="{% url 'core:message_create' %}" class="btn btn-primary btn-sm">
+                    Создать сообщение
+                </a>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for message in all_messages %}
+                        <li class="list-group-item">
+                            <a href="{% url 'core:message_detail' message.pk %}" class="text-decoration-none">
+                                <strong>ID:</strong> {{ message.id }} - {{ message.subject }}
+                            </a>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item">Нет сообщений</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <!-- Колонка Общая информация -->
         <div class="col-md-6">
             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -44,7 +70,7 @@
                         <tr>
                             <td colspan="2">
                                 <a href="{% url 'core:success_attempt_list' %}" class="d-block info-table-link">
-                                    <strong>Успешных попыток отправки:</strong> {{ success_send_attempt_count }}
+                                    <strong>Успешных отправок:</strong> {{ success_send_attempt_count }}
                                 </a>
                             </td>
                         </tr>
@@ -61,30 +87,6 @@
             </div>
         </div>
 
-        <!-- Колонка Сообщения -->
-        <div class="col-md-6">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h4>Сообщения</h4>
-                <a href="{% url 'core:message_create' %}" class="btn btn-primary btn-sm">
-                    Создать сообщение
-                </a>
-            </div>
-            <div class="card mb-3">
-                <div class="card-body">
-                    <ul class="list-group">
-                        {% for message in all_messages %}
-                        <li class="list-group-item">
-                            <a href="{% url 'core:message_detail' message.pk %}" class="text-decoration-none">
-                                <strong>ID:</strong> {{ message.id }} - {{ message.subject }}
-                            </a>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item">Нет сообщений</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}
