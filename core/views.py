@@ -1,10 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.cache import cache_page, cache_control
 from django.views.generic import ListView, CreateView, DeleteView, DetailView, UpdateView
 from django.views.generic import TemplateView
 
@@ -109,11 +112,20 @@ class RecipientDeleteView(LoginRequiredMixin, OwnerEditMixin, DeleteView):
     success_url = reverse_lazy('core:recipient_list')
     context_object_name = 'recipient'
 
-
 class NewsletterListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
     model = Newsletter
     template_name = 'core/newsletter/newsletter_list.html'
     context_object_name = 'newsletters'
+
+    def get_queryset(self):
+        user = self.request.user
+        cache_key = f"newsletter_list_{user.id}"
+        qs = cache.get(cache_key)
+        if qs is None:
+            qs = super().get_queryset()
+            qs = list(qs)
+            cache.set(cache_key, qs, 60)
+        return qs
 
 
 class ActiveNewsletterListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
@@ -140,13 +152,14 @@ class NewsletterCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        cache.delete(f"newsletter_list_{self.request.user.id}")
+        return response
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
-
 
 class NewsletterDeleteView(LoginRequiredMixin, OwnerEditMixin, DeleteView):
     model = Newsletter
@@ -154,12 +167,19 @@ class NewsletterDeleteView(LoginRequiredMixin, OwnerEditMixin, DeleteView):
     success_url = reverse_lazy('core:newsletter_list')
     context_object_name = 'newsletter'
 
+    def delete(self, request, *args, **kwargs):
+        response = super().delete(request, *args, **kwargs)
+
+        cache.delete(f"newsletter_list_{request.user.id}")
+        cache.delete(f"attempt_list_{request.user.id}")
+
+        return response
+
 
 class NewsletterUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
     model = Newsletter
     form_class = NewsletterForm
     template_name = 'core/newsletter/newsletter_update.html'
-    success_url = reverse_lazy('core:newsletter_list')
     context_object_name = 'newsletter'
 
     def get_success_url(self):
@@ -170,6 +190,12 @@ class NewsletterUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
         kwargs["user"] = self.request.user
         return kwargs
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        response = super().form_valid(form)
+        cache.delete(f"newsletter_list_{self.request.user.id}")
+        cache.delete(f"attempt_list_{self.request.user.id}")
+        return response
 
 class NewsletterDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
     model = Newsletter
@@ -183,20 +209,23 @@ class NewsletterDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
 
 
 class NewsletterManualSendView(LoginRequiredMixin, View):
-
     def post(self, request, pk):
         newsletter = get_object_or_404(Newsletter, pk=pk)
-
-        if not request.user.is_staff and newsletter.owner != request.user:
+        if not request.user.groups.filter(name="Managers").exists() and newsletter.owner != request.user:
             return redirect("core:newsletter_list")
-
+        now = timezone.now()
+        if not (newsletter.start_time <= now <= newsletter.last_send_time):
+            messages.error(
+                request,
+                "Рассылка вне разрешенного периода отправки."
+            )
+            return redirect("core:newsletter_detail", pk=newsletter.pk)
         success_count, fail_count = send_newsletter_now(newsletter)
-
         messages.success(
             request,
             f"Рассылка выполнена. Успешно: {success_count}, Неудачно: {fail_count}"
         )
-
+        cache.delete(f"attempt_list_{request.user.id}")
         return redirect("core:newsletter_detail", pk=newsletter.pk)
 
 
@@ -206,12 +235,16 @@ class SendAttemptListView(LoginRequiredMixin, ListView):
     context_object_name = "attempts"
 
     def get_queryset(self):
-        qs = super().get_queryset()
         user = self.request.user
-
-        if user.is_staff or user.groups.filter(name="Managers").exists():
-            return qs
-        return qs.filter(newsletter__owner=user)
+        cache_key = f"attempt_list_{user.id}"
+        qs = cache.get(cache_key)
+        if qs is None:
+            qs = super().get_queryset()
+            if not (user.is_staff or user.groups.filter(name="Managers").exists()):
+                qs = qs.filter(newsletter__owner=user)
+            qs = list(qs)
+            cache.set(cache_key, qs, 60)
+        return qs
 
 
 class SendAttemptDetailView(LoginRequiredMixin, DetailView):
@@ -245,7 +278,7 @@ class FailedSendAttemptListView(LoginRequiredMixin, ListView):
             return qs
         return qs.filter(newsletter__owner=self.request.user)
 
-
+@method_decorator(cache_control(private=True, max_age=60), name='dispatch')
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "core/home.html"
 
@@ -267,7 +300,6 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["success_send_attempt_count"] = SendAttempt.objects.filter(status='success',
                                                                            newsletter__owner=user).count()
         context["fail_send_attempt_count"] = SendAttempt.objects.filter(status='fail', newsletter__owner=user).count()
-
         context["all_messages"] = Message.objects.filter(owner=user)
 
         return context
