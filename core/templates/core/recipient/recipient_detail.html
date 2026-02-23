@@ -11,7 +11,7 @@
 <p><strong>Комментарий:</strong> {{ recipient.comment }}</p>
 
 <hr>
-
+{% if request.user == recipient.owner or request.user.is_staff %}
 <a href="{% url 'core:recipient_update' recipient.pk %}" class="btn btn-primary">
     Редактировать
 </a>
@@ -19,7 +19,7 @@
 <a href="{% url 'core:recipient_delete' recipient.pk %}" class="btn btn-danger">
     Удалить
 </a>
-
+{% endif %}
 <a href="{% url 'core:recipient_list' %}" class="btn btn-secondary">
     Назад к списку
 </a>
