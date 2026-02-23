@@ -1,3 +1,6 @@
+from django.http import HttpResponseForbidden
+
+
 class OwnerQuerysetMixin():
     """
      Автоматическая фильтрация queryset по роли.
@@ -9,13 +12,22 @@ class OwnerQuerysetMixin():
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.is_staff or self.is_manager(user):
+
+        if self.is_manager(user):
             return qs
 
         return qs.filter(owner=user)
 
 
 class OwnerEditMixin:
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
 
-    def get_queryset(self):
-        return super().get_queryset().filter(owner=self.request.user)
+        if request.user.groups.filter(name="Managers").exists():
+            if obj.owner != request.user:
+                return HttpResponseForbidden()
+
+        if obj.owner != request.user:
+            return HttpResponseForbidden()
+
+        return super().dispatch(request, *args, **kwargs)
