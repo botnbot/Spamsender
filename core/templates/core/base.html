@@ -41,6 +41,13 @@
                 {% if user.is_authenticated %}
 
                 <!-- Разделы системы -->
+                {% if perms.users.view_user %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'users:user_list' %}">
+                        Пользователи
+                    </a>
+                </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'core:newsletter_list' %}">Рассылки</a>
                 </li>
@@ -87,12 +94,12 @@
 <div class="container">
 
     {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                {{ message }}
-                <button class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
     {% endif %}
 
     {% block content %}{% endblock %}
