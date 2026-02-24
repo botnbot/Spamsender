@@ -2,22 +2,23 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.db.models import Count, Q
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.decorators.cache import cache_page, cache_control
+from django.views.decorators.cache import cache_control
 from django.views.generic import ListView, CreateView, DeleteView, DetailView, UpdateView
 from django.views.generic import TemplateView
-
+from django.views.generic.detail import SingleObjectMixin
 from core.services.send_newsletter import send_newsletter_now
 from .forms import NewsletterForm
-from .mixins import OwnerQuerysetMixin, OwnerEditMixin
+from .mixins import OwnerOrManagerMixin
 from .models import Newsletter, Recipient, SendAttempt, Message
 
 
-class MessageListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
+class MessageListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
+    manager_permission = "core.view_all_messages"
     model = Message
     template_name = "core/message/message_list.html"
     context_object_name = "message_list"
@@ -49,20 +50,23 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MessageDeleteView(LoginRequiredMixin, OwnerEditMixin, DeleteView):
+class MessageDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, DeleteView):
+    manager_permission = "core.view_all_messages"
     model = Message
     template_name = 'core/message/message_confirm_delete.html'
     success_url = reverse_lazy('core:message_list')
     context_object_name = 'message'
 
 
-class MessageDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
+class MessageDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
+    manager_permission = "core.view_all_messages"
     model = Message
     template_name = 'core/message/message_detail.html'
     context_object_name = 'message'
 
 
-class MessageUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
+class MessageUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, UpdateView):
+    manager_permission = "core.view_all_messages"
     model = Message
     fields = ['subject', 'text']
     template_name = 'core/message/message_update.html'
@@ -72,7 +76,8 @@ class MessageUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
         return reverse_lazy('core:message_detail', kwargs={'pk': self.object.pk})
 
 
-class RecipientUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
+class RecipientUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, UpdateView):
+    manager_permission = "core.view_all_recipients"
     model = Recipient
     fields = ['email', 'name', 'comment']
     template_name = 'core/recipient/recipient_update.html'
@@ -82,7 +87,8 @@ class RecipientUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
         return reverse_lazy('core:recipient_detail', kwargs={'pk': self.object.pk})
 
 
-class RecipientListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
+class RecipientListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
+    manager_permission = "core.view_all_recipients"
     model = Recipient
     template_name = 'core/recipient/recipient_list.html'
     context_object_name = 'recipients'
@@ -100,44 +106,42 @@ class RecipientCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class RecipientDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
+class RecipientDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
+    manager_permission = "core.view_all_recipients"
     model = Recipient
     template_name = 'core/recipient/recipient_detail.html'
     context_object_name = 'recipient'
 
 
-class RecipientDeleteView(LoginRequiredMixin, OwnerEditMixin, DeleteView):
+class RecipientDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, DeleteView):
+    manager_permission = "core.view_all_recipients"
     model = Recipient
     template_name = 'core/recipient/recipient_confirm_delete.html'
     success_url = reverse_lazy('core:recipient_list')
     context_object_name = 'recipient'
 
-class NewsletterListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
+class NewsletterListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
     model = Newsletter
+    manager_permission = "core.view_all_newsletters"
     template_name = 'core/newsletter/newsletter_list.html'
     context_object_name = 'newsletters'
 
     def get_queryset(self):
-        user = self.request.user
-        cache_key = f"newsletter_list_{user.id}"
-        qs = cache.get(cache_key)
-        if qs is None:
-            qs = super().get_queryset()
-            qs = list(qs)
-            cache.set(cache_key, qs, 60)
-        return qs
+        qs = super().get_queryset()
+        return qs.with_updated_status()
 
 
-class ActiveNewsletterListView(LoginRequiredMixin, OwnerQuerysetMixin, ListView):
-    template_name = 'core/newsletter/newsletter_active_list.html'
+class ActiveNewsletterListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
     model = Newsletter
+    template_name = 'core/newsletter/newsletter_active_list.html'
     context_object_name = "newsletters"
+    manager_permission = "core.view_all_newsletters"
 
     def get_queryset(self):
         qs = super().get_queryset()
         now = timezone.now()
         return qs.filter(
-            status='started',
+            status=Newsletter.STATUS_STARTED,
             start_time__lte=now,
             last_send_time__gte=now
         )
@@ -161,7 +165,8 @@ class NewsletterCreateView(LoginRequiredMixin, CreateView):
         kwargs["user"] = self.request.user
         return kwargs
 
-class NewsletterDeleteView(LoginRequiredMixin, OwnerEditMixin, DeleteView):
+class NewsletterDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, DeleteView):
+    manager_permission = "core.view_all_newsletters"
     model = Newsletter
     template_name = 'core/newsletter/newsletter_confirm_delete.html'
     success_url = reverse_lazy('core:newsletter_list')
@@ -176,7 +181,8 @@ class NewsletterDeleteView(LoginRequiredMixin, OwnerEditMixin, DeleteView):
         return response
 
 
-class NewsletterUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
+class NewsletterUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, UpdateView):
+    manager_permission = "core.view_all_newsletters"
     model = Newsletter
     form_class = NewsletterForm
     template_name = 'core/newsletter/newsletter_update.html'
@@ -197,7 +203,8 @@ class NewsletterUpdateView(LoginRequiredMixin, OwnerEditMixin, UpdateView):
         cache.delete(f"attempt_list_{self.request.user.id}")
         return response
 
-class NewsletterDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
+class NewsletterDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
+    manager_permission = "core.view_all_newsletters"
     model = Newsletter
     template_name = 'core/newsletter/newsletter_detail.html'
     context_object_name = 'newsletter'
@@ -208,11 +215,17 @@ class NewsletterDetailView(LoginRequiredMixin, OwnerQuerysetMixin, DetailView):
         return obj
 
 
-class NewsletterManualSendView(LoginRequiredMixin, View):
-    def post(self, request, pk):
-        newsletter = get_object_or_404(Newsletter, pk=pk)
-        if not request.user.groups.filter(name="Managers").exists() and newsletter.owner != request.user:
-            return redirect("core:newsletter_list")
+class NewsletterManualSendView(
+    LoginRequiredMixin,
+    OwnerOrManagerMixin,
+    SingleObjectMixin,
+    View,
+):
+    model = Newsletter
+    manager_permission = "core.view_all_newsletters"
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        newsletter = self.object
         now = timezone.now()
         if not (newsletter.start_time <= now <= newsletter.last_send_time):
             messages.error(
@@ -229,28 +242,19 @@ class NewsletterManualSendView(LoginRequiredMixin, View):
         return redirect("core:newsletter_detail", pk=newsletter.pk)
 
 
-class SendAttemptListView(LoginRequiredMixin, ListView):
+class SendAttemptListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
     model = SendAttempt
     template_name = "core/attempt/attempt_list.html"
     context_object_name = "attempts"
-
-    def get_queryset(self):
-        user = self.request.user
-        cache_key = f"attempt_list_{user.id}"
-        qs = cache.get(cache_key)
-        if qs is None:
-            qs = super().get_queryset()
-            if not (user.is_staff or user.groups.filter(name="Managers").exists()):
-                qs = qs.filter(newsletter__owner=user)
-            qs = list(qs)
-            cache.set(cache_key, qs, 60)
-        return qs
+    manager_permission = "core.view_all_newsletters"
 
 
-class SendAttemptDetailView(LoginRequiredMixin, DetailView):
+class SendAttemptDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
+    manager_permission = "core.view_all_newsletters"
     model = SendAttempt
     template_name = "core/attempt/attempt_detail.html"
     context_object_name = "attempt"
+
 
 
 class SuccessfulSendAttemptListView(LoginRequiredMixin, ListView):
@@ -261,7 +265,7 @@ class SuccessfulSendAttemptListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         qs = super().get_queryset().filter(status="success")
         user = self.request.user
-        if user.is_staff or user.groups.filter(name="Managers").exists():
+        if user.has_perm("core.view_all_newsletters"):
             return qs
         return qs.filter(newsletter__owner=self.request.user)
 
@@ -274,9 +278,11 @@ class FailedSendAttemptListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         qs = super().get_queryset().filter(status="fail")
         user = self.request.user
-        if user.is_staff or user.groups.filter(name="Managers").exists():
+
+        if user.has_perm("core.view_all_newsletters"):
             return qs
-        return qs.filter(newsletter__owner=self.request.user)
+
+        return qs.filter(newsletter__owner=user)
 
 @method_decorator(cache_control(private=True, max_age=60), name='dispatch')
 class HomeView(LoginRequiredMixin, TemplateView):
