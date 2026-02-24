@@ -37,34 +37,28 @@ class OwnerEditMixin:
 
 class OwnerOrManagerMixin:
     """
-    - Менеджер (с нужным permission) видит все объекты
-    - Обычный пользователь видит только свои
-    - Проверяет доступ к конкретному объекту
+    - Обычный пользователь → только свои объекты
+    - Менеджер (по permission) → все объекты
     """
 
-    owner_field = "owner"              # имя поля владельца
-    manager_permission = None          # например: "core.view_all_newsletters"
+    owner_field = "owner"
+    manager_permission = None
 
-    def get_queryset(self) -> QuerySet:
+    def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
-
         if not user.is_authenticated:
             return queryset.none()
-
         if self.manager_permission and user.has_perm(self.manager_permission):
             return queryset
-
         return queryset.filter(**{self.owner_field: user})
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         user = self.request.user
-
         if self.manager_permission and user.has_perm(self.manager_permission):
             return obj
-
         if getattr(obj, self.owner_field) != user:
-            raise PermissionDenied("У вас нет доступа к этому объекту.")
+            raise PermissionDenied("Нет доступа к объекту.")
 
         return obj

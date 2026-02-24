@@ -67,14 +67,9 @@ class RegisterView(CreateView):
 class ActivateUserView(View):
     def get(self, request, uidb64, token):
         user = None
-
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
-            print("UID:", uid)
-            print("TOKEN:", token)
-            print("CHECK:", default_token_generator.check_token(user, token))
-
         except Exception:
             pass
 
