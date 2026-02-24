@@ -1,0 +1,74 @@
+{% extends "core/base.html" %}
+
+{% block title %}Пользователи{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">Пользователи сервиса</h4>
+            </div>
+
+            <div class="card-body">
+
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Телефон</th>
+                            <th>Страна</th>
+                            <th>Статус</th>
+                            <th class="text-end">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.phone|default:"—" }}</td>
+                            <td>{{ user.country|default:"—" }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Активен</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Заблокирован</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <form method="post"
+                                      action="{% url 'users:toggle_user' user.pk %}">
+                                    {% csrf_token %}
+                                    {% if user != request.user %}
+                                        {% if user.is_active %}
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                Заблокировать
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-success">
+                                                Разблокировать
+                                            </button>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">Это вы</span>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                Пользователей нет
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
