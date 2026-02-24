@@ -49,10 +49,25 @@ class Recipient(models.Model):
 
 
 class NewsletterQuerySet(models.QuerySet):
+
     def with_updated_status(self):
-        for obj in self:
-            obj.update_status()
-        return self
+        now = timezone.now()
+        Newsletter.objects.filter(start_time__gt=now).update(
+            status=Newsletter.STATUS_CREATED
+        )
+        Newsletter.objects.filter(
+            start_time__lte=now,
+            last_send_time__gte=now
+        ).update(
+            status=Newsletter.STATUS_STARTED
+        )
+        Newsletter.objects.filter(
+            last_send_time__lt=now
+        ).update(
+            status=Newsletter.STATUS_FINISHED
+        )
+
+        return self.all()
 
 
 class Newsletter(models.Model):
@@ -69,6 +84,7 @@ class Newsletter(models.Model):
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=STATUS_CREATED)
     start_time = models.DateTimeField(verbose_name="Дата начала отправки")
     last_send_time = models.DateTimeField(verbose_name="Дата окончания отправки")
+    objects = NewsletterQuerySet.as_manager()
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
