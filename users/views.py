@@ -1,15 +1,16 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LogoutView
 from django.core.mail import send_mail
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy, reverse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views import View
-from django.views.generic import CreateView, TemplateView
+from django.views.generic import CreateView, TemplateView, ListView
 
 from config import settings
 from users.forms import RegisterForm
@@ -73,7 +74,7 @@ class ActivateUserView(View):
         except Exception:
             pass
 
-        if user and default_token_generator.check_token(user, token):
+        if user and not user.is_active and default_token_generator.check_token(user, token):
             user.is_active = True
             user.save(update_fields=["is_active"])
 
@@ -86,3 +87,29 @@ class ActivateUserView(View):
 
 class RegisterDoneView(TemplateView):
     template_name = "users/register_done.html"
+
+
+class UserListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    model = User
+    template_name = "users/user_list.html"
+    context_object_name = "users"
+    permission_required = "users.view_user"
+
+
+class ToggleUserActiveView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = "users.change_user"
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+
+        if user == request.user:
+            messages.error(request, "Нельзя заблокировать самого себя.")
+            return redirect("users:user_list")
+
+        user.is_active = not user.is_active
+        user.save(update_fields=["is_active"])
+
+        status = "разблокирован" if user.is_active else "заблокирован"
+        messages.success(request, f"Пользователь {user.email} {status}.")
+
+        return redirect("users:user_list")
