@@ -2,6 +2,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import path, reverse_lazy
 
 from . import views
+from .views import UserListView, ToggleUserActiveView
 
 app_name = "users"
 
@@ -35,4 +36,7 @@ urlpatterns = [
 
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
         template_name='users/password_reset_complete.html'), name='password_reset_complete'),
+    path("list/", UserListView.as_view(), name="user_list"),
+    path("<int:pk>/toggle/", ToggleUserActiveView.as_view(), name="toggle_user"),
+
 ]
