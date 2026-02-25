@@ -52,20 +52,20 @@ class NewsletterQuerySet(models.QuerySet):
 
     def with_updated_status(self):
         now = timezone.now()
-        Newsletter.objects.filter(start_time__gt=now).update(
-            status=Newsletter.STATUS_CREATED
-        )
-        Newsletter.objects.filter(
+        active_qs = self.exclude(status=Newsletter.STATUS_DISABLED)
+
+        active_qs.filter(
+            start_time__gt=now
+        ).update(status=Newsletter.STATUS_CREATED)
+
+        active_qs.filter(
             start_time__lte=now,
             last_send_time__gte=now
-        ).update(
-            status=Newsletter.STATUS_STARTED
-        )
-        Newsletter.objects.filter(
+        ).update(status=Newsletter.STATUS_STARTED)
+
+        active_qs.filter(
             last_send_time__lt=now
-        ).update(
-            status=Newsletter.STATUS_FINISHED
-        )
+        ).update(status=Newsletter.STATUS_FINISHED)
 
         return self.all()
 
@@ -74,11 +74,13 @@ class Newsletter(models.Model):
     STATUS_CREATED = "created"
     STATUS_STARTED = "started"
     STATUS_FINISHED = "finished"
+    STATUS_DISABLED = "disabled"
 
     STATUS_CHOICES = [
         (STATUS_CREATED, 'Создана'),
         (STATUS_STARTED, 'Запущена'),
         (STATUS_FINISHED, 'Завершена'),
+        (STATUS_DISABLED, 'Отключена')
     ]
 
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=STATUS_CREATED)
