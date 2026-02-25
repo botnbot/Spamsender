@@ -1,8 +1,8 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.cache import cache
 from django.db.models import Count, Q
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -240,6 +240,23 @@ class NewsletterManualSendView(
         )
         cache.delete(f"attempt_list_{request.user.id}")
         return redirect("core:newsletter_detail", pk=newsletter.pk)
+
+
+class DisableNewsletterView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = "core.change_newsletter"
+
+    def post(self, request, pk):
+        newsletter = get_object_or_404(Newsletter, pk=pk)
+
+        if newsletter.status == Newsletter.STATUS_DISABLED:
+            messages.info(request, "Рассылка уже отключена.")
+            return redirect("core:newsletter_list")
+
+        newsletter.status = Newsletter.STATUS_DISABLED
+        newsletter.save(update_fields=["status"])
+
+        messages.warning(request, "Рассылка отключена менеджером.")
+        return redirect("core:newsletter_list")
 
 
 class SendAttemptListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
