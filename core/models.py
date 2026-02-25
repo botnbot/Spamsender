@@ -109,6 +109,9 @@ class Newsletter(models.Model):
         return f"Рассылка {self.id}— {self.get_status_display()}"
 
     def update_status(self):
+        if self.status == self.STATUS_DISABLED:
+            return
+
         now = timezone.now()
 
         if now < self.start_time:
