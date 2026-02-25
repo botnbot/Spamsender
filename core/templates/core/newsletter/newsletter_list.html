@@ -41,22 +41,29 @@
 
         <td>
             {% if perms.core.change_newsletter %}
-            <form method="post" action="{% url 'core:newsletter_disable' newsletter.pk %}">
-                {% csrf_token %}
-                {% if newsletter.status != "disabled" %}
-                <button class="btn btn-sm btn-outline-danger">
-                    Отключить
-                </button>
-                {% else %}
-                <span class="badge bg-secondary">Отключена</span>
+    <form method="post"
+          action="{% url 'core:newsletter_toggle' newsletter.pk %}"
+          style="display:inline;">
+        {% csrf_token %}
+
+        {% if newsletter.status == "disabled" %}
+            <button class="btn btn-sm btn-outline-success mb-1">
+                Включить
+            </button>
+        {% else %}
+            <button class="btn btn-sm btn-outline-danger mb-1">
+                Отключить
+            </button>
+        {% endif %}
+    </form>
+{% endif %}
+            {% if perms.core.delete_newsletter %}
+            <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-sm btn-danger mb-1">Удалить</a>
                 {% endif %}
-            </form>
-            {% endif %}
             <a href="{% url 'core:newsletter_detail' newsletter.pk %}" class="btn btn-sm btn-primary mb-1">Подробнее</a>
             <a href="{% url 'core:newsletter_update' newsletter.pk %}"
                class="btn btn-sm btn-primary mb-1">Редактировать</a>
             <a href="{% url 'core:newsletter_create' %}" class="btn btn-sm btn-success mb-1">Создать новую рассылку</a>
-            <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-sm btn-danger mb-1">Удалить</a>
         </td>
     </tr>
     {% empty %}
