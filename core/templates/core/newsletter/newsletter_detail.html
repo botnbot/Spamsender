@@ -33,11 +33,11 @@
         Отправить сейчас вручную
     </button>
 </form>
-
-
+{% if perms.core.delete_newsletter %}
 <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-danger mb-1">
     Удалить
 </a>
+{% endif %}
 
 <a href="{% url 'core:newsletter_list' %}" class="btn btn-secondary mb-1" >
     Назад к списку
