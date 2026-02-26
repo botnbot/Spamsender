@@ -99,17 +99,18 @@ class UserListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
 class ToggleUserActiveView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = "users.change_user"
 
+    def handle_no_permission(self):
+        messages.error(self.request, "Запрещено")
+        return redirect("users:user_list")
+
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
 
         if user == request.user:
             messages.error(request, "Нельзя заблокировать самого себя.")
             return redirect("users:user_list")
-
         user.is_active = not user.is_active
         user.save(update_fields=["is_active"])
-
         status = "разблокирован" if user.is_active else "заблокирован"
         messages.success(request, f"Пользователь {user.email} {status}.")
-
         return redirect("users:user_list")
