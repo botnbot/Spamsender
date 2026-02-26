@@ -259,7 +259,30 @@ class DisableNewsletterView(LoginRequiredMixin, PermissionRequiredMixin, View):
         return redirect("core:newsletter_list")
 
 
-class SendAttemptListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
+class NewsletterToggleView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = "core.change_newsletter"
+
+    def post(self, request, pk):
+        newsletter = get_object_or_404(Newsletter, pk=pk)
+
+        # Обычный пользователь может менять только свои
+        if not request.user.is_superuser and not request.user.groups.filter(name="Менеджер").exists():
+            if newsletter.owner != request.user:
+                messages.error(request, "Нет прав на изменение этой рассылки.")
+                return redirect("core:newsletter_list")
+
+        if newsletter.status == Newsletter.STATUS_DISABLED:
+            newsletter.status = Newsletter.STATUS_CREATED
+            messages.success(request, "Рассылка включена.")
+        else:
+            newsletter.status = Newsletter.STATUS_DISABLED
+            messages.warning(request, "Рассылка отключена.")
+
+        newsletter.save(update_fields=["status"])
+        return redirect("core:newsletter_list")
+
+
+class SendAttemptListView(LoginRequiredMixin, ListView):
     model = SendAttempt
     template_name = "core/attempt/attempt_list.html"
     context_object_name = "attempts"
