@@ -23,20 +23,17 @@ class NewsletterForm(forms.ModelForm):
             self.fields["recipients"].queryset = Recipient.objects.filter(owner=self.user)
             self.fields["message"].queryset = Message.objects.filter(owner=self.user)
 
-
     def clean_start_time(self):
         start_time = self.cleaned_data.get("start_time")
         if start_time and timezone.is_naive(start_time):
             start_time = timezone.make_aware(start_time, timezone.get_current_timezone())
         return start_time
 
-
     def clean_last_send_time(self):
         last_send_time = self.cleaned_data.get("last_send_time")
         if last_send_time and timezone.is_naive(last_send_time):
             last_send_time = timezone.make_aware(last_send_time, timezone.get_current_timezone())
         return last_send_time
-
 
     def clean(self):
         cleaned_data = super().clean()
