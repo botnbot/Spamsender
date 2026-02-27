@@ -17,6 +17,7 @@
         <tr>
             <th>ID</th>
             <th>Тема</th>
+            <th>Автор</th>
             <th><a href="{% url 'core:message_create' %}" class="btn btn-sm btn-success mb-1">Создать сообщение</a></th>
         </tr>
     </thead>
@@ -25,6 +26,7 @@
         <tr>
             <td>{{ message.id }}</td>
             <td>{{ message.subject }}</td>
+            <td>{{ message.owner.email}}</td>
             <td>
                 <a href="{% url 'core:message_detail' message.id %}" class="btn btn-sm btn-primary mb-1">Подробнее</a>
                 <a href="{% url 'core:message_update' message.id %}" class="btn btn-sm btn-primary mb-1">Редактировать</a>

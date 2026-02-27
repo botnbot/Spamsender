@@ -14,6 +14,7 @@
         <th>Окончание рассылки</th>
         <th>Тема рассылки</th>
         <th>Получатели</th>
+        <th>Владелец</th>
         <th><a href="{% url 'core:newsletter_create' %}" class="btn btn-sm btn-success">Создать новую рассылку</a>
             <a href="{% url 'core:home' %}" class="btn btn-sm btn-secondary mt-1 ">На главную</a>
         </th>
@@ -38,6 +39,30 @@
             {% endfor %}
         </td>
         <td>
+            {{ newsletter.owner.email}}
+        </td>
+        <td>
+            {% if perms.core.change_newsletter %}
+            <form method="post"
+                  action="{% url 'core:newsletter_toggle' newsletter.pk %}">
+                {% csrf_token %}
+                {% if newsletter.status == "disabled" %}
+                <button class="btn btn-sm btn-outline-success">
+                    Включить
+                </button>
+                {% else %}
+                <button class="btn btn-sm btn-outline-danger">
+                    Отключить
+                </button>
+                {% endif %}
+            </form>
+            {% endif %}
+            {% if perms.core.delete_newsletter %}
+            <a href="{% url 'core:newsletter_delete' newsletter.pk %}"
+               class="btn btn-sm btn-danger">
+                Удалить
+            </a>
+            {% endif %}
             <a href="{% url 'core:newsletter_detail' newsletter.pk %}" class="btn btn-sm mt-1 btn-primary">Подробнее</a>
             <a href="{% url 'core:newsletter_update' newsletter.pk %}"
                class="btn btn-sm mt-1 btn-primary">Редактировать</a>
