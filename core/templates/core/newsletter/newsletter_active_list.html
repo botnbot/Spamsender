@@ -14,7 +14,9 @@
         <th>Окончание рассылки</th>
         <th>Тема рассылки</th>
         <th>Получатели</th>
-        <th>Действия</th>
+        <th><a href="{% url 'core:newsletter_create' %}" class="btn btn-sm btn-success">Создать новую рассылку</a>
+            <a href="{% url 'core:home' %}" class="btn btn-sm btn-secondary mt-1 ">На главную</a>
+        </th>
     </tr>
     </thead>
     <tbody>
@@ -30,15 +32,16 @@
         <td>{{ newsletter.message.subject }}</td>
         <td>
             {% for r in newsletter.recipients.all %}
-                {{ r.email }}{% if not forloop.last %}, {% endif %}
+            {{ r.email }}{% if not forloop.last %}, {% endif %}
             {% empty %}
-                —
+            —
             {% endfor %}
         </td>
         <td>
-            <a href="{% url 'core:newsletter_detail' newsletter.pk %}" class="btn btn-sm btn-primary">Подробнее</a>
-            <a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-sm btn-primary">Редактировать</a>
-            <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+            <a href="{% url 'core:newsletter_detail' newsletter.pk %}" class="btn btn-sm mt-1 btn-primary">Подробнее</a>
+            <a href="{% url 'core:newsletter_update' newsletter.pk %}"
+               class="btn btn-sm mt-1 btn-primary">Редактировать</a>
+            <a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-sm mt-1 btn-danger">Удалить</a>
         </td>
     </tr>
     {% endfor %}
