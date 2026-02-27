@@ -11,9 +11,10 @@ from django.views.decorators.cache import cache_control
 from django.views.generic import ListView, CreateView, DeleteView, DetailView, UpdateView
 from django.views.generic import TemplateView
 from django.views.generic.detail import SingleObjectMixin
+
 from core.services.send_newsletter import send_newsletter_now
 from .forms import NewsletterForm
-from .mixins import OwnerOrManagerMixin
+from .mixins import OwnerOrManagerMixin, RoleAccessMixin, RedirectOnNoAccessMixin
 from .models import Newsletter, Recipient, SendAttempt, Message
 
 
@@ -58,11 +59,16 @@ class MessageDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, DeleteView):
     context_object_name = 'message'
 
 
-class MessageDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
-    manager_permission = "core.view_all_messages"
+class MessageDetailView(
+    LoginRequiredMixin,
+    OwnerOrManagerMixin,
+    RedirectOnNoAccessMixin,  # <-- добавлено
+    DetailView
+):
     model = Message
     template_name = 'core/message/message_detail.html'
     context_object_name = 'message'
+    manager_permission = "core.view_all_messages"
 
 
 class MessageUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, UpdateView):
@@ -120,6 +126,7 @@ class RecipientDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, DeleteView):
     success_url = reverse_lazy('core:recipient_list')
     context_object_name = 'recipient'
 
+
 class NewsletterListView(LoginRequiredMixin, OwnerOrManagerMixin, ListView):
     model = Newsletter
     manager_permission = "core.view_all_newsletters"
@@ -165,6 +172,7 @@ class NewsletterCreateView(LoginRequiredMixin, CreateView):
         kwargs["user"] = self.request.user
         return kwargs
 
+
 class NewsletterDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, DeleteView):
     manager_permission = "core.view_all_newsletters"
     model = Newsletter
@@ -203,6 +211,7 @@ class NewsletterUpdateView(LoginRequiredMixin, OwnerOrManagerMixin, UpdateView):
         cache.delete(f"attempt_list_{self.request.user.id}")
         return response
 
+
 class NewsletterDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
     manager_permission = "core.view_all_newsletters"
     model = Newsletter
@@ -223,6 +232,7 @@ class NewsletterManualSendView(
 ):
     model = Newsletter
     manager_permission = "core.view_all_newsletters"
+
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         newsletter = self.object
@@ -296,7 +306,6 @@ class SendAttemptDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView)
     context_object_name = "attempt"
 
 
-
 class SuccessfulSendAttemptListView(LoginRequiredMixin, ListView):
     model = SendAttempt
     template_name = "core/attempt/success_attempt_list.html"
@@ -324,28 +333,27 @@ class FailedSendAttemptListView(LoginRequiredMixin, ListView):
 
         return qs.filter(newsletter__owner=user)
 
+
 @method_decorator(cache_control(private=True, max_age=60), name='dispatch')
-class HomeView(LoginRequiredMixin, TemplateView):
+class HomeView(LoginRequiredMixin, RoleAccessMixin, TemplateView):
     template_name = "core/home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.request.user
 
-        context["total_newsletters"] = Newsletter.objects.filter(owner=user).count()
+        context["total_newsletters"] = Newsletter.objects.filter().count()
 
         context["active_newsletters"] = (
             Newsletter.objects
-            .filter(owner=user)
+            .filter()
             .with_updated_status()
             .filter(status=Newsletter.STATUS_STARTED)
             .count()
         )
 
-        context["unique_recipients"] = Recipient.objects.filter(owner=user).count()
-        context["success_send_attempt_count"] = SendAttempt.objects.filter(status='success',
-                                                                           newsletter__owner=user).count()
-        context["fail_send_attempt_count"] = SendAttempt.objects.filter(status='fail', newsletter__owner=user).count()
-        context["all_messages"] = Message.objects.filter(owner=user)
+        context["unique_recipients"] = Recipient.objects.filter().count()
+        context["success_send_attempt_count"] = SendAttempt.objects.filter(status='success').count()
+        context["fail_send_attempt_count"] = SendAttempt.objects.filter(status='fail').count()
+        context["all_messages"] = Message.objects.filter()
 
         return context
