@@ -1,8 +1,8 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.db.models import Count, Q
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -14,7 +14,7 @@ from django.views.generic.detail import SingleObjectMixin
 
 from core.services.send_newsletter import send_newsletter_now
 from .forms import NewsletterForm
-from .mixins import OwnerOrManagerMixin, RoleAccessMixin, RedirectOnNoAccessMixin
+from .mixins import OwnerOrManagerMixin
 from .models import Newsletter, Recipient, SendAttempt, Message
 
 
@@ -62,7 +62,6 @@ class MessageDeleteView(LoginRequiredMixin, OwnerOrManagerMixin, DeleteView):
 class MessageDetailView(
     LoginRequiredMixin,
     OwnerOrManagerMixin,
-    RedirectOnNoAccessMixin,  # <-- добавлено
     DetailView
 ):
     model = Message
@@ -252,11 +251,18 @@ class NewsletterManualSendView(
         return redirect("core:newsletter_detail", pk=newsletter.pk)
 
 
-class DisableNewsletterView(LoginRequiredMixin, PermissionRequiredMixin, View):
-    permission_required = "core.change_newsletter"
+class DisableNewsletterView(
+    LoginRequiredMixin,
+    OwnerOrManagerMixin,
+    SingleObjectMixin,
+    View
+):
+    model = Newsletter
+    manager_permission = "core.view_all_newsletters"
 
-    def post(self, request, pk):
-        newsletter = get_object_or_404(Newsletter, pk=pk)
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        newsletter = self.object
 
         if newsletter.status == Newsletter.STATUS_DISABLED:
             messages.info(request, "Рассылка уже отключена.")
@@ -269,17 +275,18 @@ class DisableNewsletterView(LoginRequiredMixin, PermissionRequiredMixin, View):
         return redirect("core:newsletter_list")
 
 
-class NewsletterToggleView(LoginRequiredMixin, PermissionRequiredMixin, View):
-    permission_required = "core.change_newsletter"
+class NewsletterToggleView(
+    LoginRequiredMixin,
+    OwnerOrManagerMixin,
+    SingleObjectMixin,
+    View
+):
+    model = Newsletter
+    manager_permission = "core.view_all_newsletters"
 
-    def post(self, request, pk):
-        newsletter = get_object_or_404(Newsletter, pk=pk)
-
-        # Обычный пользователь может менять только свои
-        if not request.user.is_superuser and not request.user.groups.filter(name="Менеджер").exists():
-            if newsletter.owner != request.user:
-                messages.error(request, "Нет прав на изменение этой рассылки.")
-                return redirect("core:newsletter_list")
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        newsletter = self.object
 
         if newsletter.status == Newsletter.STATUS_DISABLED:
             newsletter.status = Newsletter.STATUS_CREATED
@@ -292,11 +299,16 @@ class NewsletterToggleView(LoginRequiredMixin, PermissionRequiredMixin, View):
         return redirect("core:newsletter_list")
 
 
-class SendAttemptListView(LoginRequiredMixin, ListView):
+class SendAttemptListView(
+    LoginRequiredMixin,
+    OwnerOrManagerMixin,
+    ListView
+):
     model = SendAttempt
     template_name = "core/attempt/attempt_list.html"
     context_object_name = "attempts"
     manager_permission = "core.view_all_newsletters"
+    owner_field = "newsletter__owner"
 
 
 class SendAttemptDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
@@ -335,25 +347,31 @@ class FailedSendAttemptListView(LoginRequiredMixin, ListView):
 
 
 @method_decorator(cache_control(private=True, max_age=60), name='dispatch')
-class HomeView(LoginRequiredMixin, RoleAccessMixin, TemplateView):
+class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "core/home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
 
-        context["total_newsletters"] = Newsletter.objects.filter().count()
+        if user.has_perm("core.view_all_newsletters"):
+            newsletters = Newsletter.objects.all()
+            recipients = Recipient.objects.all()
+            messages_qs = Message.objects.all()
+            attempts = SendAttempt.objects.all()
+        else:
+            newsletters = Newsletter.objects.filter(owner=user)
+            recipients = Recipient.objects.filter(owner=user)
+            messages_qs = Message.objects.filter(owner=user)
+            attempts = SendAttempt.objects.filter(newsletter__owner=user)
 
-        context["active_newsletters"] = (
-            Newsletter.objects
-            .filter()
-            .with_updated_status()
-            .filter(status=Newsletter.STATUS_STARTED)
-            .count()
-        )
-
-        context["unique_recipients"] = Recipient.objects.filter().count()
-        context["success_send_attempt_count"] = SendAttempt.objects.filter(status='success').count()
-        context["fail_send_attempt_count"] = SendAttempt.objects.filter(status='fail').count()
-        context["all_messages"] = Message.objects.filter()
+        context["total_newsletters"] = newsletters.count()
+        context["active_newsletters"] = newsletters.with_updated_status().filter(
+            status=Newsletter.STATUS_STARTED
+        ).count()
+        context["unique_recipients"] = recipients.count()
+        context["success_send_attempt_count"] = attempts.filter(status='success').count()
+        context["fail_send_attempt_count"] = attempts.filter(status='fail').count()
+        context["all_messages"] = messages_qs
 
         return context
