@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-
+from django.contrib.messages import constants as messages
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -65,16 +65,12 @@ EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 if not DEBUG and not EMAIL_HOST:
     raise RuntimeError("EMAIL_HOST не задан для SMTP")
-
-
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
 if EMAIL_USE_TLS and EMAIL_USE_SSL:
     raise RuntimeError("Нельзя одновременно использовать TLS и SSL")
-
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-
 DEFAULT_FROM_EMAIL = os.getenv(
     'DEFAULT_FROM_EMAIL',
     EMAIL_HOST_USER
@@ -150,4 +146,9 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "spamsender-cache",
     }
+}
+
+
+MESSAGE_TAGS = {
+    messages.ERROR: "danger",
 }

@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
+from django.views.generic import ListView
 
 
 class UserBlockMixin:
@@ -83,7 +84,6 @@ class OwnerOrManagerMixin:
     owner_field = "owner"
     no_access_redirect = "core:home"
 
-    # --- Проверка полного доступа ---
     def _has_full_access(self):
         user = self.request.user
         if user.is_superuser:
@@ -92,11 +92,15 @@ class OwnerOrManagerMixin:
             return True
         return False
 
-    # --- НЕ фильтруем queryset для DetailView ---
-    def get_queryset(self):
-        return super().get_queryset()
+        qs = super().get_queryset()
 
-    # --- Проверяем доступ вручную ---
+        if isinstance(self, ListView):
+            if self._has_full_access():
+                return qs
+            return qs.filter(**{self.owner_field: self.request.user})
+
+        return qs
+
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
 
@@ -109,7 +113,6 @@ class OwnerOrManagerMixin:
 
         return obj
 
-    # --- Ловим PermissionDenied и делаем редирект ---
     def dispatch(self, request, *args, **kwargs):
         try:
             return super().dispatch(request, *args, **kwargs)

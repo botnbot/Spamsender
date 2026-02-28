@@ -19,7 +19,7 @@
     {% for recipient in recipients %}
     <tr>
         <td>
-            <a href="{% url 'core:recipient_detail' recipient.pk %}">{{ recipient.name }</a>
+            <a href="{% url 'core:recipient_detail' recipient.pk %}">{{ recipient.name }}</a>
         </td>
         <td>{{ recipient.email }}</td>
         <td>{{ recipient.comment|truncatechars:50 }}</td>
