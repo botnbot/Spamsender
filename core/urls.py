@@ -1,10 +1,14 @@
-from django.contrib.auth.views import LogoutView
-
-from core.views import MessageListView, MessageDetailView, MessageCreateView, MessageUpdateView, MessageDeleteView, \
-    RecipientListView, RecipientDetailView, RecipientCreateView, RecipientUpdateView, RecipientDeleteView, \
-    NewsletterListView, NewsletterDetailView, NewsletterCreateView, NewsletterUpdateView, NewsletterManualSendView, \
-    NewsletterDeleteView, SendAttemptListView, SendAttemptDetailView, login_view, logout_view
 from django.urls import path
+
+from core.views import (MessageListView, MessageDetailView, MessageCreateView, MessageUpdateView, MessageDeleteView,
+                        RecipientListView, RecipientDetailView, RecipientCreateView, RecipientUpdateView,
+                        RecipientDeleteView,
+                        NewsletterListView, NewsletterDetailView, NewsletterCreateView, NewsletterUpdateView,
+                        NewsletterManualSendView,
+                        NewsletterDeleteView, ActiveNewsletterListView,
+                        SendAttemptListView, SendAttemptDetailView, FailedSendAttemptListView,
+                        SuccessfulSendAttemptListView, DisableNewsletterView, NewsletterToggleView,
+                        SendAllNewslettersView)
 from .views import HomeView
 
 app_name = 'core'
@@ -24,19 +28,19 @@ urlpatterns = [
     path('recipient/<int:pk>/edit/', RecipientUpdateView.as_view(), name='recipient_update'),
     path('recipient/<int:pk>/delete/', RecipientDeleteView.as_view(), name='recipient_delete'),
 
+    path('active_newsletter/', ActiveNewsletterListView.as_view(), name='active_newsletter_list'),
     path('newsletter/', NewsletterListView.as_view(), name='newsletter_list'),
     path('newsletter/<int:pk>/', NewsletterDetailView.as_view(), name='newsletter_detail'),
     path('newsletter/new/', NewsletterCreateView.as_view(), name='newsletter_create'),
     path('newsletter/<int:pk>/edit/', NewsletterUpdateView.as_view(), name='newsletter_update'),
     path('newsletter/<int:pk>/delete/', NewsletterDeleteView.as_view(), name='newsletter_delete'),
     path("newsletter/<int:pk>/send/", NewsletterManualSendView.as_view(), name="newsletter_manual_send"),
+    path("newsletter/send_all/", SendAllNewslettersView.as_view(), name="send_all_newsletters"),
+    path("newsletter/<int:pk>/disable/", DisableNewsletterView.as_view(), name="newsletter_disable"),
+    path("newsletter/<int:pk>/toggle/", NewsletterToggleView.as_view(), name="newsletter_toggle"),
 
     path("attempts/", SendAttemptListView.as_view(), name="attempt_list"),
     path("attempts/<int:pk>/", SendAttemptDetailView.as_view(), name="attempt_detail"),
-    # path("attempts/<int:pk>/edit/", SendAttemptUpdateView.as_view(), name="attempt_update"),
-    # path("attempts/<int:pk>/delete/", SendAttemptDeleteView.as_view(), name="attempt_confirm_delete"),
-    # path("attempts/new/", SendAttemptCreateView.as_view(), name="attempt_create"),
-
-    path('login/', login_view, name='login'),
-    path("logout/", LogoutView.as_view(), name="logout"),
+    path("attempts/success/", SuccessfulSendAttemptListView.as_view(), name="success_attempt_list"),
+    path("attempts/fail/", FailedSendAttemptListView.as_view(), name="fail_attempt_list"),
 ]

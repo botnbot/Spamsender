@@ -1,0 +1,48 @@
+{% extends "core/base.html" %}
+{% block title %}Рассылка: {{ newsletter.message.subject }}{% endblock %}
+
+{% block content %}
+<h1>{{ newsletter.message.subject }}</h1>
+
+<p><strong>Статус:</strong></p>
+<p>{{ newsletter.status }}</p>
+
+<p><strong>Дата начала:</strong></p>
+<p>{{ newsletter.start_time }}</p>
+
+<p><strong>Дата завершения:</strong></p>
+<p>{{ newsletter.last_send_time }}</p>
+
+<p><strong>Получатели:</strong></p>
+<ul>
+    {% for recipient in newsletter.recipients.all %}
+    <li>{{ recipient.name }} ({{ recipient.email }})</li>
+    {% empty %}
+    <li>Нет получателей</li>
+    {% endfor %}
+</ul>
+<hr>
+<div class=" d-flex  gap-1 ">
+<a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-primary mb-1">
+    Редактировать
+</a>
+
+
+<form action="{% url 'core:newsletter_manual_send' newsletter.pk %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary mb-1">
+        Отправить сейчас
+    </button>
+</form>
+{% if perms.core.delete_newsletter %}
+<a href="{% url 'core:newsletter_delete' newsletter.pk %}" class="btn btn-danger mb-1">
+    Удалить
+</a>
+{% endif %}
+
+<a href="{% url 'core:newsletter_list' %}" class="btn btn-secondary mb-1" >
+    Назад к списку
+</a>
+
+{% endblock %}
+

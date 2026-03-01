@@ -1,0 +1,91 @@
+{% extends "core/base.html" %}
+
+{% block title %}Список рассылок{% endblock %}
+
+{% block content %}
+<h1>Список рассылок</h1>
+<table class="table table-hover align-middle">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Статус</th>
+        <th>Начало рассылки</th>
+        <th>Окончание рассылки</th>
+        <th>Тема рассылки</th>
+        <th>Получатели</th>
+        <th>Владелец</th>
+        <th><a href="{% url 'core:newsletter_create' %}" class="btn btn-sm btn-success">Создать новую рассылку</a>
+            <a href="{% url 'core:home' %}" class="btn btn-sm btn-secondary mt-1 ">На главную</a>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for newsletter in newsletters %}
+    <tr>
+        <td>
+            <a
+                    href="{% url 'core:newsletter_detail' newsletter.pk %}">
+                {{ newsletter.id }}
+            </a>
+        </td>
+        <td>{{ newsletter.status }}</td>
+        <td>{{ newsletter.start_time|date:"d/m/Y H:i" }}</td>
+        <td>{{ newsletter.last_send_time|date:"d/m/Y H:i" }}</td>
+        <td>{{ newsletter.message.subject }}</td>
+        <td>
+            {% for r in newsletter.recipients.all %}
+            {{ r.email }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+            —
+            {% endfor %}
+        </td>
+        <td>{{newsletter.owner.email }}</td>
+        <td>
+            <div class="d-flex flex-column gap-2 align-items-end">
+                <div class="d-flex gap-2">
+                    {% if perms.core.change_newsletter %}
+                    <form method="post"
+                          action="{% url 'core:newsletter_toggle' newsletter.pk %}">
+                        {% csrf_token %}
+                        {% if newsletter.status == "disabled" %}
+                        <button class="btn btn-sm btn-outline-success">
+                            Включить
+                        </button>
+                        {% else %}
+                        <button class="btn btn-sm btn-outline-danger">
+                            Отключить
+                        </button>
+                        {% endif %}
+                    </form>
+                    {% endif %}
+                    {% if perms.core.delete_newsletter %}
+                    <a href="{% url 'core:newsletter_delete' newsletter.pk %}"
+                       class="btn btn-sm btn-danger">
+                        Удалить
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'core:newsletter_detail' newsletter.pk %}"
+                       class="btn btn-sm btn-primary">
+                        Подробнее
+                    </a>
+
+                    <a href="{% url 'core:newsletter_update' newsletter.pk %}"
+                       class="btn btn-sm btn-primary">
+                        Редактировать
+                    </a>
+                </div>
+
+            </div>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6" class="text-center">Нет рассылок</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'core:home' %}" class="btn btn-sm btn-secondary mt-1 ">На главную</a>
+{% endblock %}

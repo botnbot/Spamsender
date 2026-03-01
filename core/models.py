@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 # Create your models here.
@@ -13,30 +15,84 @@ class Message(models.Model):
     class Meta:
         verbose_name = "сообщение"
         verbose_name_plural = "сообщения"
+        permissions = [
+            ("view_all_messages", "Может просматривать все сообщения"),
+        ]
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                              on_delete=models.CASCADE,
+                              related_name='messages',
+                              verbose_name='Владелец'
+                              )
 
 
 class Recipient(models.Model):
-    email = models.EmailField(unique=True, verbose_name='email')
+    email = models.EmailField(verbose_name='email')
     name = models.CharField(max_length=150, verbose_name='Имя')
     comment = models.TextField(blank=True, null=True, verbose_name="Комментарий")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                              on_delete=models.CASCADE,
+                              related_name='recipients',
+                              verbose_name='Владелец'
+                              )
 
     def __str__(self):
         return f"{self.name} <{self.email}>"
 
     class Meta:
+        unique_together = [("email", "owner")]
         verbose_name = "получатель"
         verbose_name_plural = "получатели"
+        permissions = [
+            ("view_all_recipients", "Может просматривать всех получателей"),
+        ]
+
+
+class NewsletterQuerySet(models.QuerySet):
+
+    def with_updated_status(self):
+        now = timezone.now()
+        active_qs = self.exclude(status=Newsletter.STATUS_DISABLED)
+
+        active_qs.filter(
+            start_time__gt=now
+        ).update(status=Newsletter.STATUS_CREATED)
+
+        active_qs.filter(
+            start_time__lte=now,
+            last_send_time__gte=now
+        ).update(status=Newsletter.STATUS_STARTED)
+
+        active_qs.filter(
+            last_send_time__lt=now
+        ).update(status=Newsletter.STATUS_FINISHED)
+
+        return self.all()
 
 
 class Newsletter(models.Model):
+    STATUS_CREATED = "created"
+    STATUS_STARTED = "started"
+    STATUS_FINISHED = "finished"
+    STATUS_DISABLED = "disabled"
+
     STATUS_CHOICES = [
-        ('created', 'Создана'),
-        ('started', 'Запущена'),
-        ('completed', 'Завершена'),
+        (STATUS_CREATED, 'Создана'),
+        (STATUS_STARTED, 'Запущена'),
+        (STATUS_FINISHED, 'Завершена'),
+        (STATUS_DISABLED, 'Отключена')
     ]
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='created')
-    first_send_time = models.DateTimeField(verbose_name="Дата первой отправки")
+
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=STATUS_CREATED)
+    start_time = models.DateTimeField(verbose_name="Дата начала отправки")
     last_send_time = models.DateTimeField(verbose_name="Дата окончания отправки")
+    objects = NewsletterQuerySet.as_manager()
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='newsletters',
+        verbose_name='Владелец'
+    )
     message = models.ForeignKey(
         to="Message",
         on_delete=models.CASCADE,
@@ -52,11 +108,32 @@ class Newsletter(models.Model):
     def __str__(self):
         return f"Рассылка {self.id}— {self.get_status_display()}"
 
+    def update_status(self):
+        if self.status == self.STATUS_DISABLED:
+            return
+
+        now = timezone.now()
+
+        if now < self.start_time:
+            new_status = self.STATUS_CREATED
+        elif self.start_time <= now <= self.last_send_time:
+            new_status = self.STATUS_STARTED
+        else:
+            new_status = self.STATUS_FINISHED
+
+        if self.status != new_status:
+            self.status = new_status
+            self.save(update_fields=["status"])
 
     class Meta:
         verbose_name = "рассылка"
         verbose_name_plural = "рассылки"
-        ordering = ('-first_send_time',)
+        ordering = ('-start_time',)
+        permissions = [
+            ("view_all_newsletters", "Может просматривать все рассылки"),
+        ]
+
+    objects = NewsletterQuerySet.as_manager()
 
 
 class SendAttempt(models.Model):
@@ -67,7 +144,7 @@ class SendAttempt(models.Model):
         ('fail', 'Не успешно'),
     ]
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='fail')
-    smtp_answer = models.TextField(blank=True, null=True,verbose_name='Ответ сервера')
+    smtp_answer = models.TextField(blank=True, null=True, verbose_name='Ответ сервера')
 
     newsletter = models.ForeignKey(
         to="Newsletter",
@@ -83,4 +160,3 @@ class SendAttempt(models.Model):
 
     def __str__(self):
         return f" {self.attempt_time} {self.status}"
-

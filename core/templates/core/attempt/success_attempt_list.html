@@ -1,0 +1,25 @@
+{% extends "core/base.html" %}
+
+{% block title %}Успешные попытки{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Успешные попытки рассылок</h2>
+    <ul class="list-group">
+        {% for attempt in attempts %}
+        <li class="list-group-item">
+            <strong>ID:</strong> {{ attempt.id }} |
+            <strong>Рассылка:</strong>
+            <a href="{% url 'core:newsletter_detail' attempt.newsletter.pk %}">
+                {{ attempt.newsletter.message.subject }}
+            </a> |
+            <strong>Время:</strong> {{ attempt.attempt_time }} |
+            <strong>Ответ SMTP:</strong> {{ attempt.smtp_answer }} |
+            <strong>Владелец:</strong> {{ attempt.newsletter.owner.email }}
+        </li>
+        {% empty %}
+        <li class="list-group-item">У вас нет успешных попыток</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-
+from django.contrib.messages import constants as messages
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +21,7 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-if not os.getenv("POSTGRES_DB") or not ("POSTGRES_PASSWORD") or not ("POSTGRES_USER"):
+if not os.getenv("POSTGRES_DB") or not os.getenv("POSTGRES_PASSWORD") or not os.getenv("POSTGRES_USER"):
     raise RuntimeError("Переменные окружения POSTGRES_DB не заданы")
 
 DATABASES = {
@@ -36,9 +36,9 @@ DATABASES = {
     }
 }
 
-LOGIN_URL = 'core:login'
+LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'core:home'
-LOGOUT_REDIRECT_URL = 'core:login'
+LOGOUT_REDIRECT_URL = 'users:login'
 
 # Application definition
 
@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "core",
     'widget_tweaks',
+    'users',
 ]
 
 # Email settings
@@ -64,16 +65,12 @@ EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 if not DEBUG and not EMAIL_HOST:
     raise RuntimeError("EMAIL_HOST не задан для SMTP")
-
-
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
 if EMAIL_USE_TLS and EMAIL_USE_SSL:
     raise RuntimeError("Нельзя одновременно использовать TLS и SSL")
-
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-
 DEFAULT_FROM_EMAIL = os.getenv(
     'DEFAULT_FROM_EMAIL',
     EMAIL_HOST_USER
@@ -94,7 +91,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -107,6 +104,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
+
+AUTH_USER_MODEL = "users.User"
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -125,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "ru-ru"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Moscow"
 
 USE_I18N = True
 
@@ -140,3 +140,15 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "spamsender-cache",
+    }
+}
+
+
+MESSAGE_TAGS = {
+    messages.ERROR: "danger",
+}

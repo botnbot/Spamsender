@@ -1,9 +1,9 @@
 import os
 import sys
+
 from dotenv import load_dotenv
 
-
-load_dotenv() # загрузка .env перед запуском Django
+load_dotenv()  # загрузка .env перед запуском Django
 
 
 def main():

@@ -1,0 +1,22 @@
+{% extends "core/base.html" %}
+
+{% load static %}
+
+{% block title %}Создание сообщения{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h3 class="mb-0">Создать новое сообщение</h3>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit" class="btn btn-primary">Создать</button>
+            <a href="{% url 'core:home' %}" class="btn btn-secondary">Назад</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
