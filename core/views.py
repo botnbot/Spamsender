@@ -375,3 +375,35 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["all_messages"] = messages_qs
 
         return context
+
+
+class SendAllNewslettersView(LoginRequiredMixin, View):
+    """
+    Отправляет все активные рассылки текущего пользователя,
+    которые находятся в статусе STARTED и в пределах времени start_time <= now <= last_send_time
+    """
+    def get(self, request, *args, **kwargs):
+        now = timezone.now()
+        newsletters = Newsletter.objects.filter(
+            owner=request.user,
+            status=Newsletter.STATUS_STARTED,
+            start_time__lte=now,
+            last_send_time__gte=now,
+        )
+
+        total_sent = 0
+        total_failed = 0
+
+        for newsletter in newsletters:
+            success, fail = send_newsletter_now(newsletter)
+            total_sent += success
+            total_failed += fail
+
+        if newsletters:
+            messages.success(
+                request,
+                f"Отправка выполнена: успешно {total_sent}, неудачно {total_failed}"
+            )
+        else:
+            messages.info(request, "Нет активных рассылок для отправки.")
+        return redirect("core:active_newsletter_list")
