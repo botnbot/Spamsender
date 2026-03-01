@@ -14,7 +14,8 @@
                 {{ attempt.newsletter.message.subject }}
             </a> |
             <strong>Время:</strong> {{ attempt.attempt_time }} |
-            <strong>Ответ SMTP:</strong> {{ attempt.smtp_answer }}
+            <strong>Ответ SMTP:</strong> {{ attempt.smtp_answer }} |
+            <strong>Владелец:</strong> {{ attempt.newsletter.owner.email }}
         </li>
         {% empty %}
         <li class="list-group-item">У вас нет успешных попыток</li>
