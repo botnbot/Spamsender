@@ -22,15 +22,16 @@
     {% endfor %}
 </ul>
 <hr>
-
+<div class=" d-flex  gap-1 ">
 <a href="{% url 'core:newsletter_update' newsletter.pk %}" class="btn btn-primary mb-1">
     Редактировать
 </a>
 
+
 <form action="{% url 'core:newsletter_manual_send' newsletter.pk %}" method="post">
     {% csrf_token %}
     <button type="submit" class="btn btn-primary mb-1">
-        Отправить сейчас вручную
+        Отправить сейчас
     </button>
 </form>
 {% if perms.core.delete_newsletter %}
@@ -42,4 +43,6 @@
 <a href="{% url 'core:newsletter_list' %}" class="btn btn-secondary mb-1" >
     Назад к списку
 </a>
+
 {% endblock %}
+
