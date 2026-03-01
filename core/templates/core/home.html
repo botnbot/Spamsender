@@ -5,7 +5,14 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4"><strong>Spamsender</strong></h1>
-    <h5 class="mb-4">Сервис для массовой отправки сообщений</h5>
+    <div class="d-flex align-items-center gap-3 mb-4">
+    <h5 class="mb-0">Сервис для массовой отправки сообщений</h5>
+    <a href="{% url 'core:send_all_newsletters' %}"
+       class="btn btn-primary"
+       onclick="return confirm('Вы уверены, что хотите отправить все активные рассылки?');">
+        Отправить все активные рассылки
+    </a>
+</div>
 
     <div class="row">
 
@@ -41,8 +48,8 @@
                 <a href="{% url 'core:recipient_create' %}" class="btn btn-success btn-sm">
                     Добавить получателей
                 </a><a href="{% url 'core:newsletter_create' %}" class="btn btn-primary btn-sm">
-                    Создать рассылку
-                </a>
+                Создать рассылку
+            </a>
             </div>
             <div class="card mb-3">
                 <div class="card-body">
@@ -72,14 +79,14 @@
                         <tr>
                             <td colspan="2">
                                 <a href="{% url 'core:success_attempt_list' %}" class="d-block info-table-link">
-                                    <strong>Успешных отправок:</strong> {{ success_send_attempt_count }}
+                                    <strong>Успешно отправленных сообщений:</strong> {{ success_send_attempt_count }}
                                 </a>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
                                 <a href="{% url 'core:fail_attempt_list' %}" class="d-block info-table-link">
-                                    <strong>Неудачных попыток отправки:</strong> {{ fail_send_attempt_count }}
+                                    <strong>Не ушедших сообщений</strong> {{ fail_send_attempt_count }}
                                 </a>
                             </td>
                         </tr>
