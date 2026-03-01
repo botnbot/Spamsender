@@ -7,7 +7,8 @@ from core.views import (MessageListView, MessageDetailView, MessageCreateView, M
                         NewsletterManualSendView,
                         NewsletterDeleteView, ActiveNewsletterListView,
                         SendAttemptListView, SendAttemptDetailView, FailedSendAttemptListView,
-                        SuccessfulSendAttemptListView, DisableNewsletterView, NewsletterToggleView)
+                        SuccessfulSendAttemptListView, DisableNewsletterView, NewsletterToggleView,
+                        SendAllNewslettersView)
 from .views import HomeView
 
 app_name = 'core'
@@ -34,6 +35,7 @@ urlpatterns = [
     path('newsletter/<int:pk>/edit/', NewsletterUpdateView.as_view(), name='newsletter_update'),
     path('newsletter/<int:pk>/delete/', NewsletterDeleteView.as_view(), name='newsletter_delete'),
     path("newsletter/<int:pk>/send/", NewsletterManualSendView.as_view(), name="newsletter_manual_send"),
+    path("newsletter/send_all/", SendAllNewslettersView.as_view(), name="send_all_newsletters"),
     path("newsletter/<int:pk>/disable/", DisableNewsletterView.as_view(), name="newsletter_disable"),
     path("newsletter/<int:pk>/toggle/", NewsletterToggleView.as_view(), name="newsletter_toggle"),
 
